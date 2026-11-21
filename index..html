@@ -1,0 +1,2289 @@
+<!DOCTYPE html>
+<html lang="ur" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Al Haq Travels - Fully Synced Ledger System</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDKs for Cloud Sync -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <style>
+        @media print {
+            body { background: white; font-size: 11px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; height: auto !important; overflow: visible !important; }
+            .no-print { display: none !important; }
+            .print-container { width: 100% !important; padding: 0 !important; margin: 0 !important; overflow: visible !important; height: auto !important; position: static !important; display: block !important; }
+            html, body { height: auto !important; overflow: visible !important; }
+            div, main { overflow: visible !important; height: auto !important; max-height: none !important; }
+            table { width: 100% !important; font-size: 10.5px !important; border-collapse: collapse; margin-top: 10px; page-break-inside: auto !important; }
+            tr { page-break-inside: avoid !important; page-break-after: auto !important; }
+            thead { display: table-header-group !important; }
+            tfoot { display: table-footer-group !important; }
+            th { background-color: #1e3a8a !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 8px !important; text-align: left; }
+            td { padding: 6px 8px !important; border-bottom: 1px solid #cbd5e1 !important; }
+            tr:nth-child(even) { background-color: #f8fafc !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .print-header { display: flex !important; justify-content: space-between !important; align-items: center !important; border-bottom: 3px solid #1e3a8a; padding-bottom: 12px; margin-bottom: 15px; }
+            .col-action { display: none !important; }
+        }
+        .print-header { display: none; }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans">
+
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <div class="w-64 bg-slate-900 text-white flex flex-col justify-between hidden md:flex shadow-lg no-print">
+            <div>
+                <div class="p-6 text-xl font-bold border-b border-slate-800 flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-kaaba"></i>
+                    </div>
+                    <span>Al Haq Travels</span>
+                </div>
+                <nav class="p-4 space-y-2">
+                    <a href="#" onclick="switchTab('dashboard')" id="nav-dashboard" class="flex items-center gap-3 p-3 rounded-xl bg-blue-600 text-white font-medium shadow-md transition">
+                        <i class="fa-solid fa-chart-pie w-5"></i> Dashboard
+                    </a>
+                    
+                    <!-- Customers Dropdown -->
+                    <div>
+                        <button onclick="toggleDropdown('customer-dropdown')" class="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-800 text-slate-300 font-medium transition">
+                            <span class="flex items-center gap-3"><i class="fa-solid fa-users w-5"></i> Customers</span>
+                            <i class="fa-solid fa-chevron-down text-xs"></i>
+                        </button>
+                        <div id="customer-dropdown" class="pl-4 mt-1 space-y-1 hidden">
+                            <a href="#" onclick="switchTab('customer-entry')" class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-slate-800 text-slate-400 text-sm transition">
+                                <i class="fa-solid fa-user-plus w-4"></i> Customer Entry & List
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Ledger Dropdown -->
+                    <div>
+                        <button onclick="toggleDropdown('ledger-dropdown')" class="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-800 text-slate-300 font-medium transition">
+                            <span class="flex items-center gap-3"><i class="fa-solid fa-book-open w-5"></i> Ledger</span>
+                            <i class="fa-solid fa-chevron-down text-xs"></i>
+                        </button>
+                        <div id="ledger-dropdown" class="pl-4 mt-1 space-y-1 hidden">
+                            <a href="#" onclick="switchTab('ledger-entry')" class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-slate-800 text-slate-400 text-sm transition">
+                                <i class="fa-solid fa-file-pen w-4"></i> Customer Ledger Entry
+                            </a>
+                            <a href="#" onclick="switchTab('agent-ledger')" class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-slate-800 text-slate-400 text-sm transition">
+                                <i class="fa-solid fa-file-lines w-4"></i> Agent Ledger Statement
+                            </a>
+                            <a href="#" onclick="switchTab('master-ledger')" class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-slate-800 text-slate-400 text-sm transition">
+                                <i class="fa-solid fa-table-list w-4"></i> Master Ledger
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Vendors & Expenses -->
+                    <a href="#" onclick="switchTab('vendors')" class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 text-slate-300 font-medium transition">
+                        <i class="fa-solid fa-truck-field w-5"></i> Vendors & Payments
+                    </a>
+                    <a href="#" onclick="switchTab('expenses')" class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 text-slate-300 font-medium transition">
+                        <i class="fa-solid fa-receipt w-5"></i> Office Expenses
+                    </a>
+                    <!-- Bank Accounts Menu Item -->
+                    <a href="#" onclick="switchTab('bank-accounts')" class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 text-slate-300 font-medium transition">
+                        <i class="fa-solid fa-building-columns w-5"></i> Bank Accounts
+                    </a>
+                </nav>
+            </div>
+            <div class="p-4 border-t border-slate-800 text-xs text-slate-400 text-center">
+                <p>Al Haq Hajj & Umrah Services</p>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col overflow-y-auto print-container">
+            <header class="bg-white shadow-sm h-20 flex items-center justify-between px-8 border-b border-slate-200 no-print">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-800" id="page-title">Dashboard Overview</h1>
+                    <p class="text-xs text-slate-500 mt-0.5">Al Haq Hajj & Umrah Services Ledger System (Triple Sync Active)</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span id="sync-status" class="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800"><i class="fa-solid fa-cloud-arrow-up mr-1"></i> Multi-Sync Active (Firebase + Sheets)</span>
+                    <span class="text-sm font-semibold text-slate-700"><i class="fa-solid fa-user-shield text-blue-600 mr-2"></i> Admin Panel</span>
+                </div>
+            </header>
+
+            <main class="p-8 space-y-8">
+
+                <!-- DATALISTS FOR AUTO-COMPLETE SUGGESTIONS -->
+                <datalist id="suggestions-banks">
+                    <option value="Meezan Bank">
+                    <option value="BankIslami">
+                    <option value="UBL Islamic">
+                    <option value="MCB Islamic">
+                    <option value="Cash">
+                </datalist>
+
+                <datalist id="suggestions-passengers"></datalist>
+                <datalist id="suggestions-rates"></datalist>
+
+                <!-- 1. DASHBOARD TAB -->
+                <div id="tab-dashboard" class="space-y-8">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div class="bg-gradient-to-br from-blue-600 to-blue-700 p-6 rounded-2xl shadow-lg text-white">
+                            <p class="text-blue-100 text-xs font-semibold uppercase">Total Market Receivable</p>
+                            <h3 class="text-2xl font-extrabold mt-2" id="stat-total-receivable">Rs. 0</h3>
+                            <p class="text-xs text-blue-200 mt-1">Total pending from agents</p>
+                        </div>
+                        <div class="bg-gradient-to-br from-indigo-600 to-indigo-700 p-6 rounded-2xl shadow-lg text-white">
+                            <p class="text-indigo-100 text-xs font-semibold uppercase">Total Vendor Payments</p>
+                            <h3 class="text-2xl font-extrabold mt-2" id="stat-total-vpaid">Rs. 0</h3>
+                            <p class="text-xs text-indigo-200 mt-1">Paid to hotels/transports</p>
+                        </div>
+                        <div class="bg-gradient-to-br from-amber-600 to-amber-700 p-6 rounded-2xl shadow-lg text-white">
+                            <p class="text-amber-100 text-xs font-semibold uppercase">Total Office Expenses</p>
+                            <h3 class="text-2xl font-extrabold mt-2" id="stat-total-expenses">Rs. 0</h3>
+                            <p class="text-xs text-amber-200 mt-1">Operational expenses</p>
+                        </div>
+                        <div class="bg-gradient-to-br from-emerald-600 to-emerald-700 p-6 rounded-2xl shadow-lg text-white">
+                            <p class="text-emerald-100 text-xs font-semibold uppercase">Estimated Net Profit</p>
+                            <h3 class="text-2xl font-extrabold mt-2" id="stat-net-profit">Rs. 0</h3>
+                            <p class="text-xs text-emerald-200 mt-1">Bookings minus expenses</p>
+                        </div>
+                    </div>
+
+                    <!-- COMPACT UNIVERSAL QUICK SEARCH BOX ON DASHBOARD -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                        <div class="flex flex-col md:flex-row items-center justify-between gap-3">
+                            <div class="flex items-center gap-2 w-full md:w-auto">
+                                <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm font-bold">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-800">Quick Search (تلاش)</h4>
+                                    <p class="text-[11px] text-slate-400">Passport, Name & Bank</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-2 w-full md:w-2/3">
+                                <input type="text" id="quick-search-input" placeholder="Type name, passport or bank..." class="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-xs bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <button onclick="performQuickSearch()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-semibold shadow transition">
+                                    <i class="fa-solid fa-search mr-1"></i> Search
+                                </button>
+                            </div>
+                        </div>
+                        <div id="quick-search-result" class="mt-3"></div>
+                    </div>
+
+                    <!-- PARTIES OUTSTANDING BALANCE SUMMARY SHEET -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-bold text-slate-800"><i class="fa-solid fa-file-invoice-dollar text-emerald-600 mr-2"></i> Parties / Agents Outstanding Balance Summary Sheet</h3>
+                            <button onclick="switchTab('agent-ledger')" class="text-xs text-blue-600 font-bold hover:underline">View Full Ledger Statements <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr class="bg-slate-900 text-white uppercase text-xs">
+                                        <th class="py-3 px-4 rounded-l-lg">Code</th>
+                                        <th class="py-3 px-4">Agency / Party Name</th>
+                                        <th class="py-3 px-4">Contact</th>
+                                        <th class="py-3 px-4">Total Outstanding Balance</th>
+                                        <th class="py-3 px-4 text-center rounded-r-lg">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dashboard-parties-tbody" class="divide-y divide-slate-100">
+                                    <tr><td colspan="5" class="py-6 text-center text-slate-400">No customers found.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. CUSTOMER ENTRY & DIRECTORY TAB -->
+                <div id="tab-customer-entry" class="space-y-6 hidden">
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 max-w-3xl mx-auto">
+                        <h3 class="text-xl font-bold text-slate-800 mb-6 pb-2 border-b border-slate-100" id="cust-form-title">Add New Customer / Agent</h3>
+                        <form id="form-customer" onsubmit="saveCustomer(event)" class="space-y-4">
+                            <input type="hidden" id="edit-cust-id">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Customer / Agent Name</label>
+                                    <input type="text" id="c-name" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Muhammad Ali">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Customer Code</label>
+                                    <input type="text" id="c-code" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="CUST-001">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Travel Agency Name</label>
+                                    <input type="text" id="c-agency" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Al-Madina Travels">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Contact Number (WhatsApp)</label>
+                                    <input type="text" id="c-contact" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="923001234567">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Address</label>
+                                <input type="text" id="c-address" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Office # 12, Blue Area, Islamabad">
+                            </div>
+                            <div class="flex justify-end gap-3 pt-4">
+                                <button type="button" onclick="resetCustomerForm()" class="px-5 py-2.5 bg-slate-100 text-slate-700 font-semibold rounded-xl text-sm hover:bg-slate-200 transition">Cancel</button>
+                                <button type="submit" class="px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-xl text-sm hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition">Save Customer</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                        <h3 class="text-lg font-bold text-slate-800 mb-4">Saved Customers Directory</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="border-b border-slate-100 text-slate-400 text-xs uppercase">
+                                        <th class="py-3 px-4 font-semibold">Code</th>
+                                        <th class="py-3 px-4 font-semibold">Name</th>
+                                        <th class="py-3 px-4 font-semibold">Agency</th>
+                                        <th class="py-3 px-4 font-semibold">Contact</th>
+                                        <th class="py-3 px-4 font-semibold">Address</th>
+                                        <th class="py-3 px-4 font-semibold text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="customers-tbody" class="text-sm text-slate-700 divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. LEDGER ENTRY TAB -->
+                <div id="tab-ledger-entry" class="space-y-6 hidden">
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 max-w-3xl mx-auto">
+                        <h3 class="text-xl font-bold text-slate-800 mb-6 pb-2 border-b border-slate-100" id="ledger-form-heading">Customer Ledger Entry</h3>
+                        
+                        <div class="mb-6">
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-2">Select Entry Type</label>
+                            <div class="grid grid-cols-3 gap-2 mb-2">
+                                <button type="button" onclick="setBookingType('Payment')" id="btn-type-Payment" class="py-2.5 rounded-xl font-bold text-xs border-2 border-blue-600 bg-blue-50 text-blue-700 transition">Payment Received</button>
+                                <button type="button" onclick="setBookingType('GP Booking')" id="btn-type-GP Booking" class="py-2.5 rounded-xl font-bold text-xs border-2 border-slate-200 text-slate-600 hover:bg-slate-50 transition">GP Booking</button>
+                                <button type="button" onclick="setBookingType('Hotel Booking')" id="btn-type-Hotel Booking" class="py-2.5 rounded-xl font-bold text-xs border-2 border-slate-200 text-slate-600 hover:bg-slate-50 transition">Hotel Booking</button>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button type="button" onclick="setBookingType('Ticket')" id="btn-type-Ticket" class="py-2.5 rounded-xl font-bold text-xs border-2 border-slate-200 text-slate-600 hover:bg-slate-50 transition">Ticket</button>
+                                <button type="button" onclick="setBookingType('Visa Only')" id="btn-type-Visa Only" class="py-2.5 rounded-xl font-bold text-xs border-2 border-slate-200 text-slate-600 hover:bg-slate-50 transition">Visa Only</button>
+                                <button type="button" onclick="setBookingType('Only Hotel Booking')" id="btn-type-Only Hotel Booking" class="py-2.5 rounded-xl font-bold text-xs border-2 border-slate-200 text-slate-600 hover:bg-slate-50 transition">Only Hotel</button>
+                            </div>
+                            <div class="mt-2">
+                                <button type="button" onclick="setBookingType('General Entry')" id="btn-type-General Entry" class="w-full py-2.5 rounded-xl font-bold text-xs border-2 border-slate-200 text-slate-600 hover:bg-slate-50 transition">General / Other (Previous Balance, Ziarat, etc.)</button>
+                            </div>
+                        </div>
+
+                        <form id="form-ledger" onsubmit="saveLedgerEntry(event)" class="space-y-4">
+                            <input type="hidden" id="edit-entry-id">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Select Customer</label>
+                                <select id="l-customer" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">-- Choose Customer --</option>
+                                </select>
+                            </div>
+
+                            <!-- GP BOOKING SECTION -->
+                            <div id="section-gp" class="space-y-4 hidden">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Package Number</label>
+                                        <input type="text" id="gp-pkg" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50" placeholder="PKG-501">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Booking Date (DD-MM-YYYY)</label>
+                                        <input type="text" id="gp-date" onclick="this.select()" onfocus="this.select()" oninput="autoFormatDateInput(event, this)" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50 font-bold" placeholder="DD-MM-YYYY">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Passenger Name</label>
+                                        <input type="text" id="gp-passenger-name" list="suggestions-passengers" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50" placeholder="Passenger Name">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Passport Number (PP No)</label>
+                                        <input type="text" id="gp-pp" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50" placeholder="AB123456">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Voucher Number (VBR No)</label>
+                                        <input type="text" id="gp-vbr" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50" placeholder="VBR-1001">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Room Type</label>
+                                        <select id="gp-room-type" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50">
+                                            <option value="Sharing">Sharing</option>
+                                            <option value="Quint">Quint</option>
+                                            <option value="Quad">Quad</option>
+                                            <option value="Triple">Triple</option>
+                                            <option value="Double">Double</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Amount (PKR)</label>
+                                    <input type="number" id="gp-amount" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50" placeholder="200000">
+                                </div>
+                            </div>
+
+                            <!-- OTHER SECTIONS -->
+                            <div id="section-passenger" class="grid grid-cols-2 gap-4 hidden">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Passenger Name</label>
+                                    <input type="text" id="b-passenger-name" list="suggestions-passengers" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50" placeholder="Passenger Name">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Passport Number (PP No)</label>
+                                    <input type="text" id="b-pp" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50" placeholder="AB123456">
+                                </div>
+                            </div>
+
+                            <div id="section-payment" class="space-y-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Bank Name / Cash Details</label>
+                                        <input type="text" id="p-bank" list="suggestions-banks" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50" placeholder="e.g. Meezan Bank / Cash">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Date (DD-MM-YYYY)</label>
+                                        <input type="text" id="p-date" onclick="this.select()" onfocus="this.select()" oninput="autoFormatDateInput(event, this)" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50 font-bold" placeholder="DD-MM-YYYY">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Amount (PKR)</label>
+                                    <input type="number" id="p-amount" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50" placeholder="0">
+                                </div>
+                            </div>
+
+                            <!-- GENERAL / OTHER ENTRY SECTION -->
+                            <div id="section-general" class="space-y-4 hidden">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Entry Qisam (Debit / Credit)</label>
+                                        <select id="gen-nature" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50">
+                                            <option value="Debit">Pese Lene Hain (Amount Leni Hai)</option>
+                                            <option value="Credit">Pese Dene Hain (Amount Deni Hai)</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Date (DD-MM-YYYY)</label>
+                                        <input type="text" id="gen-date" onclick="this.select()" onfocus="this.select()" oninput="autoFormatDateInput(event, this)" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50 font-bold" placeholder="DD-MM-YYYY">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Details (e.g. PREVIOUS BALANCE, SEND TO CONSULATE)</label>
+                                    <input type="text" id="gen-title" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50" placeholder="PREVIOUS BALANCE">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Amount (PKR)</label>
+                                    <input type="number" id="gen-amount" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50" placeholder="0">
+                                </div>
+                            </div>
+
+                            <div id="section-hotel-booking" class="space-y-4 hidden">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Booking Date (DD-MM-YYYY)</label>
+                                        <input type="text" id="hb-date" onclick="this.select()" onfocus="this.select()" oninput="autoFormatDateInput(event, this)" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50 font-bold" placeholder="DD-MM-YYYY">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Voucher Number (VBR No)</label>
+                                        <input type="text" id="hb-vbr" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50" placeholder="VBR-1001">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Room Type</label>
+                                        <select id="hb-room-type" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50">
+                                            <option value="Sharing">Sharing</option>
+                                            <option value="Quint">Quint</option>
+                                            <option value="Quad">Quad</option>
+                                            <option value="Triple">Triple</option>
+                                            <option value="Double">Double</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4 border-b pb-3">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Visa Rate (SAR)</label>
+                                        <input type="number" step="any" id="hb-visa-rate" list="suggestions-rates" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50" placeholder="50">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Visa Real Rate (PKR)</label>
+                                        <div class="relative flex items-center">
+                                            <input type="number" step="any" id="hb-visa-real-rate" list="suggestions-rates" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50 pr-8" placeholder="75">
+                                            <button type="button" onclick="removeRateFromMemory(document.getElementById('hb-visa-real-rate').value)" class="absolute right-2 text-red-500 hover:text-red-700 text-xs font-bold" title="Delete Rate from Memory">×</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-100 space-y-3">
+                                    <h4 class="text-xs font-bold text-blue-800 uppercase">Stay Segment 1</h4>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <input type="number" id="hb-m1" placeholder="Makkah Nights 1" class="px-3 py-2 border rounded-xl text-sm bg-white">
+                                        <input type="number" step="any" id="hb-mr1" placeholder="Makkah Rate 1" class="px-3 py-2 border rounded-xl text-sm bg-white">
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <input type="number" id="hb-md1" placeholder="Madina Nights 1" class="px-3 py-2 border rounded-xl text-sm bg-white">
+                                        <input type="number" step="any" id="hb-mdr1" placeholder="Madina Rate 1" class="px-3 py-2 border rounded-xl text-sm bg-white">
+                                    </div>
+                                </div>
+                                <div class="bg-amber-50/50 p-4 rounded-xl border border-amber-100 space-y-3">
+                                    <h4 class="text-xs font-bold text-amber-800 uppercase">Stay Segment 2</h4>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <input type="number" id="hb-m2" placeholder="Makkah Nights 2" class="px-3 py-2 border rounded-xl text-sm bg-white">
+                                        <input type="number" step="any" id="hb-mr2" placeholder="Makkah Rate 2" class="px-3 py-2 border rounded-xl text-sm bg-white">
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <input type="number" id="hb-md2" placeholder="Madina Nights 2" class="px-3 py-2 border rounded-xl text-sm bg-white">
+                                        <input type="number" step="any" id="hb-mdr2" placeholder="Madina Rate 2" class="px-3 py-2 border rounded-xl text-sm bg-white">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Hotel Real Rate (PKR)</label>
+                                    <div class="relative flex items-center">
+                                        <input type="number" step="any" id="hb-hotel-real" list="suggestions-rates" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50 pr-8" placeholder="75">
+                                        <button type="button" onclick="removeRateFromMemory(document.getElementById('hb-hotel-real').value)" class="absolute right-2 text-red-500 hover:text-red-700 text-xs font-bold" title="Delete Rate from Memory">×</button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Vendor Name</label>
+                                    <input type="text" id="hb-vendor" placeholder="Vendor Name" class="w-full px-4 py-2 border rounded-xl text-sm bg-slate-50">
+                                </div>
+                            </div>
+
+                            <div id="section-ticket" class="space-y-4 hidden">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Booking Date (DD-MM-YYYY)</label>
+                                        <input type="text" id="t-date" onclick="this.select()" onfocus="this.select()" oninput="autoFormatDateInput(event, this)" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50 font-bold" placeholder="DD-MM-YYYY">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">PNR Number</label>
+                                        <input type="text" id="t-pnr" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50" placeholder="PNR12345">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Airline Details (e.g. Saudia, PIA)</label>
+                                    <input type="text" id="t-airline" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50" placeholder="Saudia Airlines">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Ticket Amount (PKR)</label>
+                                    <input type="number" id="t-amount" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50" placeholder="0">
+                                </div>
+                            </div>
+
+                            <div id="section-visa" class="space-y-4 hidden">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Booking Date (DD-MM-YYYY)</label>
+                                        <input type="text" id="v-date" onclick="this.select()" onfocus="this.select()" oninput="autoFormatDateInput(event, this)" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50 font-bold" placeholder="DD-MM-YYYY">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Voucher / Ref No</label>
+                                        <input type="text" id="v-ref" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50" placeholder="Visa-01">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Visa Rate (SAR)</label>
+                                        <input type="number" step="any" id="v-rate" list="suggestions-rates" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50" placeholder="50">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Visa Real Rate (PKR)</label>
+                                        <div class="relative flex items-center">
+                                            <input type="number" step="any" id="v-real-rate" list="suggestions-rates" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50 pr-8" placeholder="75">
+                                            <button type="button" onclick="removeRateFromMemory(document.getElementById('v-real-rate').value)" class="absolute right-2 text-red-500 hover:text-red-700 text-xs font-bold" title="Delete Rate from Memory">×</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="section-only-hotel" class="space-y-4 hidden">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Booking Date (DD-MM-YYYY)</label>
+                                        <input type="text" id="oh-date" onclick="this.select()" onfocus="this.select()" oninput="autoFormatDateInput(event, this)" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50 font-bold" placeholder="DD-MM-YYYY">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Voucher Number (VBR No)</label>
+                                        <input type="text" id="oh-vbr" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50" placeholder="VBR-1001">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Room Type</label>
+                                        <select id="oh-room-type" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50">
+                                            <option value="Sharing">Sharing</option>
+                                            <option value="Quint">Quint</option>
+                                            <option value="Quad">Quad</option>
+                                            <option value="Triple">Triple</option>
+                                            <option value="Double">Double</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-100 space-y-3">
+                                    <h4 class="text-xs font-bold text-blue-800 uppercase">Stay Segment 1</h4>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <input type="number" id="oh-m1" placeholder="Makkah Nights 1" class="px-3 py-2 border rounded-xl text-sm bg-white">
+                                        <input type="number" step="any" id="oh-mr1" placeholder="Makkah Rate 1" class="px-3 py-2 border rounded-xl text-sm bg-white">
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <input type="number" id="oh-md1" placeholder="Madina Nights 1" class="px-3 py-2 border rounded-xl text-sm bg-white">
+                                        <input type="number" step="any" id="oh-mdr1" placeholder="Madina Rate 1" class="px-3 py-2 border rounded-xl text-sm bg-white">
+                                    </div>
+                                </div>
+                                <div class="bg-amber-50/50 p-4 rounded-xl border border-amber-100 space-y-3">
+                                    <h4 class="text-xs font-bold text-amber-800 uppercase">Stay Segment 2</h4>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <input type="number" id="oh-m2" placeholder="Makkah Nights 2" class="px-3 py-2 border rounded-xl text-sm bg-white">
+                                        <input type="number" step="any" id="oh-mr2" placeholder="Makkah Rate 2" class="px-3 py-2 border rounded-xl text-sm bg-white">
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <input type="number" id="oh-md2" placeholder="Madina Nights 2" class="px-3 py-2 border rounded-xl text-sm bg-white">
+                                        <input type="number" step="any" id="oh-mdr2" placeholder="Madina Rate 2" class="px-3 py-2 border rounded-xl text-sm bg-white">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Hotel Real Rate (PKR)</label>
+                                    <div class="relative flex items-center">
+                                        <input type="number" step="any" id="oh-hotel-real" list="suggestions-rates" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50 pr-8" placeholder="75">
+                                        <button type="button" onclick="removeRateFromMemory(document.getElementById('oh-hotel-real').value)" class="absolute right-2 text-red-500 hover:text-red-700 text-xs font-bold" title="Delete Rate from Memory">×</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-end gap-3 pt-4">
+                                <button type="button" id="cancel-edit-btn" onclick="cancelEditEntry()" class="px-5 py-2.5 bg-slate-100 text-slate-700 font-semibold rounded-xl text-sm hover:bg-slate-200 transition hidden">Cancel Edit</button>
+                                <button type="submit" id="submit-entry-btn" class="px-6 py-2.5 bg-emerald-600 text-white font-semibold rounded-xl text-sm hover:bg-emerald-700 shadow-lg shadow-emerald-600/20 transition">Add Entry</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- 4. AGENT LEDGER TAB -->
+                <div id="tab-agent-ledger" class="space-y-6 hidden">
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                        <div class="print-header">
+                            <div class="flex items-center gap-2">
+                                <div class="w-9 h-9 rounded-lg bg-amber-500 text-white flex items-center justify-center text-sm font-bold shadow">
+                                    <i class="fa-solid fa-kaaba"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-extrabold text-blue-900 tracking-wide">Al Haq Travels</h4>
+                                    <p class="text-[10px] text-slate-500">Hajj & Umrah Services</p>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <h2 class="text-lg font-extrabold text-blue-900 tracking-wide" id="print-party-name-agent">Party Name</h2>
+                                <p class="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Agency Ledger Statement</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs font-semibold text-slate-500">Date: <span id="print-date-agent"></span></p>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center mb-6 no-print flex-wrap gap-3">
+                            <h3 class="text-lg font-bold text-slate-800">Agent Ledger Statement</h3>
+                            <div class="flex items-center gap-3 flex-wrap">
+                                <select id="filter-customer-agent" onchange="renderAgentLedger()" class="px-4 py-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
+                                    <option value="">Select Customer to View Ledger</option>
+                                </select>
+                                <button onclick="triggerPrintWithCustomTitle('Agent')" class="bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-900"><i class="fa-solid fa-file-arrow-down mr-1"></i> Download PDF with Balance</button>
+                                <button onclick="shareOnWhatsApp()" class="bg-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-emerald-700"><i class="fa-brands fa-whatsapp mr-1"></i> Share on WhatsApp</button>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr class="bg-blue-900 text-white uppercase text-xs">
+                                        <th class="py-3 px-3 font-semibold rounded-l-lg">Date / Type</th>
+                                        <th class="py-3 px-3 font-semibold">Passenger / Details</th>
+                                        <th class="py-3 px-3 font-semibold">Calculation Breakdown</th>
+                                        <th class="py-3 px-3 font-semibold">Debit (Charges)</th>
+                                        <th class="py-3 px-3 font-semibold">Credit (Payment)</th>
+                                        <th class="py-3 px-3 font-semibold">Balance</th>
+                                        <th class="py-3 px-3 font-semibold text-center rounded-r-lg col-action">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="agent-ledger-tbody" class="divide-y divide-slate-100">
+                                    <tr><td colspan="7" class="py-6 text-center text-slate-400">Please select a customer above.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. MASTER LEDGER TAB -->
+                <div id="tab-master-ledger" class="space-y-6 hidden">
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                        <div class="print-header">
+                            <div class="flex items-center gap-2">
+                                <div class="w-9 h-9 rounded-lg bg-amber-500 text-white flex items-center justify-center text-sm font-bold shadow">
+                                    <i class="fa-solid fa-kaaba"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-extrabold text-blue-900 tracking-wide">Al Haq Travels</h4>
+                                    <p class="text-[10px] text-slate-500">Master Record</p>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <h2 class="text-lg font-extrabold text-blue-900 tracking-wide">Al Haq Hajj & Umrah Services</h2>
+                                <p class="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Master Ledger (All Customers & Transactions)</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs font-semibold text-slate-500">Date: <span id="print-date-master"></span></p>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center mb-6 no-print">
+                            <h3 class="text-lg font-bold text-slate-800">Master Ledger Sheet (Complete Overview)</h3>
+                            <div class="flex items-center gap-3">
+                                <button onclick="triggerPrintWithCustomTitle('Master')" class="bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-900"><i class="fa-solid fa-file-arrow-down mr-1"></i> Download PDF with Balance</button>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr class="bg-blue-900 text-white uppercase text-xs">
+                                        <th class="py-3 px-3 font-semibold rounded-l-lg">Date / Type</th>
+                                        <th class="py-3 px-3 font-semibold">Customer / Agency</th>
+                                        <th class="py-3 px-3 font-semibold">Passenger / Details</th>
+                                        <th class="py-3 px-3 font-semibold">Calculation Breakdown & Vendor</th>
+                                        <th class="py-3 px-3 font-semibold">Debit</th>
+                                        <th class="py-3 px-3 font-semibold">Credit</th>
+                                        <th class="py-3 px-3 font-semibold">Balance</th>
+                                        <th class="py-3 px-3 font-semibold text-center rounded-r-lg col-action">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="master-ledger-tbody" class="divide-y divide-slate-100">
+                                    <tr><td colspan="8" class="py-6 text-center text-slate-400">No records found.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. VENDORS & PAYMENTS TAB -->
+                <div id="tab-vendors" class="space-y-6 hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 no-print">
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                            <h3 class="text-lg font-bold text-slate-800 mb-4 pb-2 border-b" id="vendor-form-title">Add Vendor</h3>
+                            <form id="form-vendor" onsubmit="saveVendor(event)" class="space-y-4">
+                                <input type="hidden" id="edit-vendor-id">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Vendor Name / Company</label>
+                                    <input type="text" id="v-name" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50" placeholder="Hotel Safwah / Transport Co">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Contact Number</label>
+                                    <input type="text" id="v-contact" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50" placeholder="03001234567">
+                                </div>
+                                <div class="flex justify-end gap-2 pt-2">
+                                    <button type="button" onclick="resetVendorForm()" class="px-4 py-2 bg-slate-100 text-slate-700 font-semibold rounded-xl text-xs">Cancel</button>
+                                    <button type="submit" class="px-5 py-2 bg-indigo-600 text-white font-semibold rounded-xl text-xs shadow">Save Vendor</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:col-span-2">
+                            <h3 class="text-lg font-bold text-slate-800 mb-4 pb-2 border-b" id="vpay-form-heading">Pay to Vendor</h3>
+                            <form id="form-vpay" onsubmit="saveVendorPayment(event)" class="space-y-4">
+                                <input type="hidden" id="edit-vpay-id">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Select Vendor</label>
+                                        <select id="vp-vendor" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50">
+                                            <option value="">-- Choose Vendor --</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Date (DD-MM-YYYY)</label>
+                                        <input type="text" id="vp-date" onclick="this.select()" onfocus="this.select()" oninput="autoFormatDateInput(event, this)" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50 font-bold" placeholder="DD-MM-YYYY">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">General Details (Bill No / Remarks)</label>
+                                        <input type="text" id="vp-details" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50" placeholder="Bill # 123 / Advance">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Bank Name / Cash Details</label>
+                                        <input type="text" id="vp-bank" list="suggestions-banks" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50" placeholder="UBL / Cash">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Amount (PKR)</label>
+                                    <input type="number" id="vp-amount" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50" placeholder="0">
+                                </div>
+                                <div class="flex justify-end gap-2 pt-2">
+                                    <button type="button" id="cancel-vpay-btn" onclick="cancelEditVendorPay()" class="px-4 py-2 bg-slate-100 text-slate-700 font-semibold rounded-xl text-xs hidden">Cancel</button>
+                                    <button type="submit" id="submit-vpay-btn" class="px-6 py-2.5 bg-emerald-600 text-white font-semibold rounded-xl text-sm shadow">Save Payment</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 no-print">
+                            <h3 class="text-md font-bold text-slate-800 mb-3">Saved Vendors List</h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-sm">
+                                    <thead>
+                                        <tr class="border-b text-slate-400 text-xs uppercase">
+                                            <th class="py-2 px-2">Vendor Name</th>
+                                            <th class="py-2 px-2">Contact</th>
+                                            <th class="py-2 px-2 text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="vendors-tbody" class="divide-y"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:col-span-2">
+                            <div class="print-header">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-9 h-9 rounded-lg bg-amber-500 text-white flex items-center justify-center text-sm font-bold shadow">
+                                        <i class="fa-solid fa-kaaba"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-xs font-extrabold text-blue-900 tracking-wide">Al Haq Travels</h4>
+                                        <p class="text-[10px] text-slate-500">Vendor Payment Record</p>
+                                    </div>
+                                </div>
+                                <div class="text-center">
+                                    <h2 class="text-lg font-extrabold text-blue-900 tracking-wide" id="print-vendor-name-title">Select Vendor</h2>
+                                    <p class="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Vendor Payment Statement</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-xs font-semibold text-slate-500">Date: <span id="print-date-vendor"></span></p>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-between items-center mb-4 no-print flex-wrap gap-3">
+                                <h3 class="text-md font-bold text-slate-800">Vendor Payment History Statement</h3>
+                                <div class="flex items-center gap-3 flex-wrap">
+                                    <select id="filter-vendor-payments" onchange="renderVendorPayments()" class="px-4 py-2 border border-slate-200 rounded-xl text-sm bg-slate-50">
+                                        <option value="">Select Vendor to View Statement</option>
+                                    </select>
+                                    <button onclick="triggerPrintWithCustomTitle('Vendor')" class="bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-900"><i class="fa-solid fa-file-arrow-down mr-1"></i> Download PDF with Balance</button>
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-sm">
+                                    <thead>
+                                        <tr class="bg-indigo-900 text-white uppercase text-xs">
+                                            <th class="py-2.5 px-3 rounded-l-lg">Date</th>
+                                            <th class="py-2.5 px-3">Vendor Name</th>
+                                            <th class="py-2.5 px-3">Details / Bank</th>
+                                            <th class="py-2.5 px-3">Amount Paid</th>
+                                            <th class="py-2.5 px-3 text-center rounded-r-lg col-action">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="vpay-tbody" class="divide-y divide-slate-100">
+                                        <tr><td colspan="5" class="py-6 text-center text-slate-400">Please select a vendor above to view statement.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7. OFFICE EXPENSES TAB -->
+                <div id="tab-expenses" class="space-y-6 hidden">
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 max-w-2xl mx-auto">
+                        <h3 class="text-xl font-bold text-slate-800 mb-6 pb-2 border-b" id="exp-form-heading">Add Office Expense</h3>
+                        <form id="form-expense" onsubmit="saveExpense(event)" class="space-y-4">
+                            <input type="hidden" id="edit-exp-id">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Expense Title / Category</label>
+                                    <input type="text" id="ex-title" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50" placeholder="Tea / Electricity Bill / Rent">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Date (DD-MM-YYYY)</label>
+                                    <input type="text" id="ex-date" onclick="this.select()" onfocus="this.select()" oninput="autoFormatDateInput(event, this)" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50 font-bold" placeholder="DD-MM-YYYY">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Amount (PKR)</label>
+                                <input type="number" id="ex-amount" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50" placeholder="0">
+                            </div>
+                            <div class="flex justify-end gap-3 pt-2">
+                                <button type="button" id="cancel-exp-btn" onclick="cancelEditExpense()" class="px-4 py-2 bg-slate-100 text-slate-700 font-semibold rounded-xl text-xs hidden">Cancel</button>
+                                <button type="submit" id="submit-exp-btn" class="px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-xl text-sm shadow">Save Expense</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                        <h3 class="text-lg font-bold text-slate-800 mb-4">Office Expenses History</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm">
+                                <thead>
+                                    <tr class="bg-slate-800 text-white uppercase text-xs">
+                                        <th class="py-3 px-4 rounded-l-lg">Date</th>
+                                        <th class="py-3 px-4">Expense Title</th>
+                                        <th class="py-3 px-4">Amount Paid</th>
+                                        <th class="py-3 px-4 text-center rounded-r-lg">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="expenses-tbody" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 8. BANK ACCOUNTS TAB -->
+                <div id="tab-bank-accounts" class="space-y-6 hidden">
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 max-w-4xl mx-auto">
+                        <div class="text-center mb-6 pb-4 border-b border-slate-200">
+                            <div class="w-12 h-12 bg-amber-500 rounded-2xl text-white mx-auto flex items-center justify-center text-xl shadow mb-2">
+                                <i class="fa-solid fa-kaaba"></i>
+                            </div>
+                            <h2 class="text-xl font-extrabold text-blue-900 tracking-wide">AL-HAQ HAJJ & UMRAH SERVICES</h2>
+                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mt-1">Official Bank Accounts Details</p>
+                        </div>
+
+                        <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 mb-6 no-print">
+                            <h3 class="text-md font-bold text-slate-800 mb-4" id="bank-form-title">Add New Bank Account</h3>
+                            <form id="form-bank" onsubmit="saveBank(event)" class="space-y-4">
+                                <input type="hidden" id="edit-bank-id">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Bank Name & Subtitle</label>
+                                        <input type="text" id="b-name" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-white" placeholder="Meezan Bank">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Account Title</label>
+                                        <input type="text" id="b-title" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-white" placeholder="ATTA UL HAQ / AL-HAQ HAJJ & UMRAH">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Account Number</label>
+                                        <input type="text" id="b-acc" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-white" placeholder="0314-0107999129">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">IBAN Number</label>
+                                        <input type="text" id="b-iban" required class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-white" placeholder="PK57 MEZN 0003140107999129">
+                                    </div>
+                                </div>
+                                <div class="flex justify-end gap-2 pt-2">
+                                    <button type="button" id="cancel-bank-btn" onclick="cancelEditBank()" class="px-4 py-2 bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs hidden">Cancel</button>
+                                    <button type="submit" id="submit-bank-btn" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm shadow">Save Bank Account</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr class="bg-blue-900 text-white uppercase text-xs">
+                                        <th class="py-3.5 px-4 font-semibold"><i class="fa-solid fa-building-columns mr-1.5"></i> Bank Name</th>
+                                        <th class="py-3.5 px-4 font-semibold"><i class="fa-solid fa-user-tie mr-1.5"></i> Account Title</th>
+                                        <th class="py-3.5 px-4 font-semibold"><i class="fa-solid fa-credit-card mr-1.5"></i> Account Number / IBAN</th>
+                                        <th class="py-3.5 px-4 font-semibold text-center no-print">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="banks-tbody" class="divide-y divide-slate-100 text-slate-700">
+                                    <tr><td colspan="4" class="py-6 text-center text-slate-400">No bank accounts added yet.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="mt-6 flex justify-between items-center no-print">
+                            <p class="text-xs text-slate-500"><i class="fa-solid fa-circle-info mr-1"></i> You can print or save this section as a professional image/PDF.</p>
+                            <button onclick="triggerPrintWithCustomTitle('Bank')" class="bg-slate-800 hover:bg-slate-900 text-white px-6 py-2.5 rounded-xl text-sm font-semibold shadow transition">
+                                <i class="fa-solid fa-file-arrow-down mr-2"></i> Download PDF with Balance
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // ----------------------------------------------------
+        // SMART AUTO-DATE & FORMATTING FUNCTIONS
+        // ----------------------------------------------------
+        function getTodayDDMMYYYY() {
+            const d = new Date();
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const year = d.getFullYear();
+            return `${day}-${month}-${year}`;
+        }
+
+        function autoFormatDateInput(e, input) {
+            let val = input.value.replace(/\D/g, ''); 
+            if (val.length > 8) val = val.substr(0, 8);
+            
+            let formatted = '';
+            if (val.length > 4) {
+                formatted = val.substr(0, 2) + '-' + val.substr(2, 2) + '-' + val.substr(4, 4);
+            } else if (val.length > 2) {
+                formatted = val.substr(0, 2) + '-' + val.substr(2);
+            } else {
+                formatted = val;
+            }
+            input.value = formatted;
+        }
+
+        function setDMYValue(targetId, dateStr) {
+            const el = document.getElementById(targetId);
+            if(el) {
+                el.value = dateStr ? formatDateToPK(dateStr) : getTodayDDMMYYYY();
+            }
+        }
+
+        function getDMYValue(targetId) {
+            const el = document.getElementById(targetId);
+            if(el && el.value.trim() !== '') {
+                return formatDateToPK(el.value.trim());
+            }
+            return getTodayDDMMYYYY();
+        }
+
+        function formatDateToPK(dateStr) {
+            if(!dateStr) return getTodayDDMMYYYY();
+            if(dateStr.length === 10 && dateStr.charAt(2) === '-' && dateStr.charAt(5) === '-') {
+                return dateStr;
+            }
+            const parts = dateStr.split('-');
+            if(parts.length === 3) {
+                if(parts[0].length === 4) {
+                    return `${parts[2].padStart(2,'0')}-${parts[1].padStart(2,'0')}-${parts[0]}`;
+                }
+                return `${parts[0].padStart(2,'0')}-${parts[1].padStart(2,'0')}-${parts[2]}`;
+            }
+            if(dateStr.length === 8 && !dateStr.includes('-')) {
+                return `${dateStr.substr(0,2)}-${dateStr.substr(2,2)}-${dateStr.substr(4,4)}`;
+            }
+            return dateStr;
+        }
+
+        function parseDateForSort(dateStr) {
+            if(!dateStr) return 0;
+            const parts = dateStr.split('-');
+            if(parts.length === 3) {
+                if(parts[0].length === 4) {
+                    return new Date(parts[0], parts[1] - 1, parts[2]).getTime();
+                } else {
+                    return new Date(parts[2], parts[1] - 1, parts[0]).getTime();
+                }
+            }
+            return new Date(dateStr).getTime();
+        }
+
+        // ----------------------------------------------------
+        // MEMORY & AUTO-SUGGESTION SYSTEM (PASSENGERS & RATES)
+        // ----------------------------------------------------
+        function updateSuggestionsLists() {
+            let passengersSet = new Set(JSON.parse(localStorage.getItem('al_haq_passengers_memory') || '["Muhammad Ali", "Zahid Khan", "Ahmed Bilal"]'));
+            let ratesSet = new Set(JSON.parse(localStorage.getItem('al_haq_rates_memory') || '["75", "76", "50", "100"]'));
+
+            if(db.entries) {
+                db.entries.forEach(e => {
+                    if(e.extra && e.extra.passengerName) passengersSet.add(e.extra.passengerName);
+                });
+            }
+
+            if(db.entries) {
+                db.entries.forEach(e => {
+                    if(e.extra) {
+                        if(e.extra.visaRealRate) ratesSet.add(String(e.extra.visaRealRate));
+                        if(e.extra.hotelReal) ratesSet.add(String(e.extra.hotelReal));
+                    }
+                });
+            }
+
+            const pListEl = document.getElementById('suggestions-passengers');
+            if(pListEl) {
+                pListEl.innerHTML = '';
+                passengersSet.forEach(name => {
+                    pListEl.innerHTML += `<option value="${name}">`;
+                });
+            }
+
+            const rListEl = document.getElementById('suggestions-rates');
+            if(rListEl) {
+                rListEl.innerHTML = '';
+                ratesSet.forEach(rate => {
+                    rListEl.innerHTML += `<option value="${rate}">`;
+                });
+            }
+
+            localStorage.setItem('al_haq_passengers_memory', JSON.stringify([...passengersSet]));
+            localStorage.setItem('al_haq_rates_memory', JSON.stringify([...ratesSet]));
+        }
+
+        function rememberRate(rate) {
+            if(!rate || isNaN(rate)) return;
+            let list = JSON.parse(localStorage.getItem('al_haq_rates_memory') || '[]');
+            if(!list.includes(String(rate))) {
+                list.push(String(rate));
+                localStorage.setItem('al_haq_rates_memory', JSON.stringify(list));
+                updateSuggestionsLists();
+            }
+        }
+
+        function removeRateFromMemory(rateVal) {
+            if(!rateVal) return;
+            let list = JSON.parse(localStorage.getItem('al_haq_rates_memory') || '[]');
+            list = list.filter(r => r !== String(rateVal));
+            localStorage.setItem('al_haq_rates_memory', JSON.stringify(list));
+            updateSuggestionsLists();
+            alert('Rate ' + rateVal + ' memory se hata diya gaya hai!');
+        }
+
+        // ----------------------------------------------------
+        // HYBRID INSTANT LOAD + FIREBASE + GOOGLE SHEETS SYNC
+        // ----------------------------------------------------
+        const firebaseConfig = {
+            apiKey: "AIzaSyAFYtHHuzZjet-z4dmZs_HKQ_h_ND4-HHE",
+            authDomain: "alhaqledger.firebaseapp.com",
+            databaseURL: "https://alhaqledger-default-rtdb.firebaseio.com",
+            projectId: "alhaqledger",
+            storageBucket: "alhaqledger.firebasestorage.app",
+            messagingSenderId: "208330896463",
+            appId: "1:208330896463:web:ddf7ac0811e05a515b663a",
+            measurementId: "G-M21NK7KKF5"
+        };
+
+        const GOOGLE_SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxcBH3C4P4H-l9oUQ6YAYnIr_BjgnZdxXDdPgtKuvKRHD1fLZ1bhJV2ApI8tZcXGU20/exec";
+
+        let db = JSON.parse(localStorage.getItem('travel_agency_db')) || { customers: [], entries: [], vendors: [], vendorPayments: [], expenses: [], bankAccounts: [] };
+        let isFirebaseInitialized = false;
+
+        if(!db.bankAccounts || db.bankAccounts.length === 0) {
+            db.bankAccounts = [
+                { id: 'B_1', name: 'Meezan Bank', title: 'ATTA UL HAQ', acc: '0314-0107999129', iban: 'PK57 MEZN 0003140107999129' },
+                { id: 'B_2', name: 'BankIslami', title: 'AL-HAQ HAJJ & UMRAH SERVICES', acc: '3119-00022670001', iban: 'PK42 BKIP 0311900022670001' },
+                { id: 'B_3', name: 'UBL Islamic', title: 'AL-HAQ HAJJ & UMRAH SERVICES', acc: '2411353748624', iban: 'PK76UNIL0109000353748624' },
+                { id: 'B_4', name: 'MCB Islamic Bank Ltd.', title: 'AL-HAQ HAJJ & UMRAH SERVICES', acc: '2191-005096420001', iban: 'PK77 MCIB 2191005096420001' }
+            ];
+            localStorage.setItem('travel_agency_db', JSON.stringify(db));
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = getTodayDDMMYYYY();
+            ['gp-date', 'p-date', 'hb-date', 't-date', 'v-date', 'oh-date', 'gen-date', 'vp-date', 'ex-date'].forEach(id => {
+                setDMYValue(id, today);
+            });
+            updateSuggestionsLists();
+            refreshActiveViews();
+        });
+
+        try {
+            firebase.initializeApp(firebaseConfig);
+            const firebaseDb = firebase.database();
+            isFirebaseInitialized = true;
+
+            firebaseDb.ref('al_haq_travels_db').on('value', (snapshot) => {
+                const serverData = snapshot.val();
+                if(serverData) {
+                    db = serverData;
+                    if(!db.customers) db.customers = [];
+                    if(!db.entries) db.entries = [];
+                    if(!db.vendors) db.vendors = [];
+                    if(!db.vendorPayments) db.vendorPayments = [];
+                    if(!db.expenses) db.expenses = [];
+                    if(!db.bankAccounts) db.bankAccounts = [];
+                    localStorage.setItem('travel_agency_db', JSON.stringify(db));
+                    document.getElementById('sync-status').className = "text-xs font-semibold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800";
+                    document.getElementById('sync-status').innerHTML = '<i class="fa-solid fa-cloud-arrow-up mr-1"></i> Multi-Sync Active (Firebase + Sheets)';
+                    updateSuggestionsLists();
+                    refreshActiveViews();
+                } else {
+                    firebaseDb.ref('al_haq_travels_db').set(db);
+                }
+            }, (error) => {
+                document.getElementById('sync-status').className = "text-xs font-semibold px-3 py-1 rounded-full bg-red-100 text-red-800";
+                document.getElementById('sync-status').innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i> Sync Offline (Local Mode)';
+            });
+        } catch (e) {
+            document.getElementById('sync-status').className = "text-xs font-semibold px-3 py-1 rounded-full bg-blue-100 text-blue-800";
+            document.getElementById('sync-status').innerHTML = '<i class="fa-solid fa-database mr-1"></i> Local Storage Mode';
+        }
+
+        function syncToGoogleSheet() {
+            if(!GOOGLE_SHEET_WEB_APP_URL || GOOGLE_SHEET_WEB_APP_URL.includes('YOUR_GOOGLE_APPS_SCRIPT')) return;
+            fetch(GOOGLE_SHEET_WEB_APP_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(db)
+            }).catch(err => console.log('Google Sheet sync error:', err));
+        }
+
+        function saveData() {
+            localStorage.setItem('travel_agency_db', JSON.stringify(db));
+            if(isFirebaseInitialized) {
+                firebase.database().ref('al_haq_travels_db').set(db);
+            }
+            syncToGoogleSheet();
+            updateSuggestionsLists();
+            refreshActiveViews();
+        }
+
+        function refreshActiveViews() {
+            updateStats();
+            populateCustomerDropdowns();
+            populateVendorDropdowns();
+            renderCustomers();
+            renderMasterLedger();
+            renderVendors();
+            renderVendorPayments();
+            renderExpenses();
+            renderDashboardPartiesSummary();
+            renderBankAccounts();
+            const activeAgent = document.getElementById('filter-customer-agent').value;
+            if(activeAgent) renderAgentLedger();
+        }
+
+        let currentBookingType = 'Payment';
+
+        function toggleDropdown(id) {
+            const el = document.getElementById(id);
+            if(el) el.classList.toggle('hidden');
+        }
+
+        function closeAllDropdowns() {
+            ['customer-dropdown', 'ledger-dropdown'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.classList.add('hidden');
+            });
+        }
+
+        function switchTab(tabId) {
+            closeAllDropdowns();
+
+            ['dashboard', 'customer-entry', 'ledger-entry', 'agent-ledger', 'master-ledger', 'vendors', 'expenses', 'bank-accounts'].forEach(id => {
+                const tabEl = document.getElementById('tab-' + id);
+                if(tabEl) tabEl.classList.add('hidden');
+            });
+            const targetTab = document.getElementById('tab-' + tabId);
+            if(targetTab) targetTab.classList.remove('hidden');
+
+            const titles = {
+                'dashboard': 'Dashboard Overview',
+                'customer-entry': 'Customer Entry & Directory',
+                'ledger-entry': 'Customer Ledger Entry',
+                'agent-ledger': 'Agent Ledger Statement',
+                'master-ledger': 'Master Ledger Overview',
+                'vendors': 'Vendors & Payments Management',
+                'expenses': 'Office Expenses Tracker',
+                'bank-accounts': 'Official Bank Accounts Details'
+            };
+            document.getElementById('page-title').innerText = titles[tabId] || 'System';
+
+            if(tabId === 'customer-entry') renderCustomers();
+            if(tabId === 'agent-ledger') populateCustomerDropdowns();
+            if(tabId === 'master-ledger') renderMasterLedger();
+            updateStats();
+        }
+
+        function setBookingType(type) {
+            currentBookingType = type;
+            ['Payment', 'GP Booking', 'Hotel Booking', 'Ticket', 'Visa Only', 'Only Hotel Booking', 'General Entry'].forEach(t => {
+                const btn = document.getElementById('btn-type-' + t);
+                if(btn) {
+                    if(t === type) {
+                        btn.className = "py-2.5 rounded-xl font-bold text-xs border-2 border-blue-600 bg-blue-50 text-blue-700 transition";
+                    } else {
+                        btn.className = "py-2.5 rounded-xl font-bold text-xs border-2 border-slate-200 text-slate-600 hover:bg-slate-50 transition";
+                    }
+                }
+            });
+
+            document.getElementById('section-payment').classList.add('hidden');
+            document.getElementById('section-gp').classList.add('hidden');
+            document.getElementById('section-hotel-booking').classList.add('hidden');
+            document.getElementById('section-ticket').classList.add('hidden');
+            document.getElementById('section-visa').classList.add('hidden');
+            document.getElementById('section-only-hotel').classList.add('hidden');
+            document.getElementById('section-passenger').classList.add('hidden');
+            document.getElementById('section-general').classList.add('hidden');
+
+            if(type === 'Payment') {
+                document.getElementById('section-payment').classList.remove('hidden');
+            } else if(type === 'GP Booking') {
+                document.getElementById('section-gp').classList.remove('hidden');
+            } else if(type === 'General Entry') {
+                document.getElementById('section-general').classList.remove('hidden');
+            } else {
+                document.getElementById('section-passenger').classList.remove('hidden');
+                if(type === 'Hotel Booking') document.getElementById('section-hotel-booking').classList.remove('hidden');
+                if(type === 'Ticket') document.getElementById('section-ticket').classList.remove('hidden');
+                if(type === 'Visa Only') document.getElementById('section-visa').classList.remove('hidden');
+                if(type === 'Only Hotel Booking') document.getElementById('section-only-hotel').classList.remove('hidden');
+            }
+        }
+
+        function resetCustomerForm() {
+            document.getElementById('form-customer').reset();
+            document.getElementById('edit-cust-id').value = '';
+            document.getElementById('cust-form-title').innerText = 'Add New Customer / Agent';
+        }
+
+        function saveCustomer(e) {
+            e.preventDefault();
+            const editId = document.getElementById('edit-cust-id').value;
+            const name = document.getElementById('c-name').value;
+            const code = document.getElementById('c-code').value;
+            const agency = document.getElementById('c-agency').value;
+            const contact = document.getElementById('c-contact').value || '';
+            const address = document.getElementById('c-address').value || '';
+
+            if(editId) {
+                const cust = db.customers.find(c => c.id === editId);
+                if(cust) { cust.name = name; cust.code = code; cust.agency = agency; cust.contact = contact; cust.address = address; }
+            } else {
+                const newCust = { id: 'C_' + Date.now(), name, code, agency, contact, address };
+                db.customers.push(newCust);
+            }
+
+            saveData();
+            resetCustomerForm();
+            renderCustomers();
+        }
+
+        function renderCustomers() {
+            const tbody = document.getElementById('customers-tbody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            if(db.customers.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-400">No customers found.</td></tr>`;
+                return;
+            }
+            db.customers.forEach(c => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="py-3.5 px-4 font-semibold text-blue-600">${c.code}</td>
+                        <td class="py-3.5 px-4 font-bold text-slate-800">${c.name}</td>
+                        <td class="py-3.5 px-4 text-slate-600">${c.agency}</td>
+                        <td class="py-3.5 px-4 text-slate-600">${c.contact || '-'}</td>
+                        <td class="py-3.5 px-4 text-slate-600">${c.address || '-'}</td>
+                        <td class="py-3.5 px-4 text-center space-x-2">
+                            <button onclick="editCustomer('${c.id}')" class="text-blue-500 hover:text-blue-700 font-semibold px-2 py-1 rounded bg-blue-50"><i class="fa-solid fa-pen-to-square mr-1"></i> Edit</button>
+                            <button onclick="deleteCustomer('${c.id}')" class="text-red-500 hover:text-red-700 font-semibold px-2 py-1 rounded bg-red-50"><i class="fa-solid fa-trash mr-1"></i> Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function editCustomer(id) {
+            const cust = db.customers.find(c => c.id === id);
+            if(!cust) return;
+            document.getElementById('edit-cust-id').value = cust.id;
+            document.getElementById('c-name').value = cust.name;
+            document.getElementById('c-code').value = cust.code;
+            document.getElementById('c-agency').value = cust.agency;
+            document.getElementById('c-contact').value = cust.contact || '';
+            document.getElementById('c-address').value = cust.address || '';
+            document.getElementById('cust-form-title').innerText = 'Edit Customer / Agent Details';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function deleteCustomer(id) {
+            if(confirm('Kya aap waqai is customer ko delete karna chahte hain? Is se juray tamam ledger records bhi delete ho jayenge.')) {
+                db.customers = db.customers.filter(c => c.id !== id);
+                db.entries = db.entries.filter(en => en.customerId !== id);
+                saveData();
+            }
+        }
+
+        function saveBank(e) {
+            e.preventDefault();
+            const editId = document.getElementById('edit-bank-id').value;
+            const name = document.getElementById('b-name').value;
+            const title = document.getElementById('b-title').value;
+            const acc = document.getElementById('b-acc').value;
+            const iban = document.getElementById('b-iban').value;
+
+            if(!db.bankAccounts) db.bankAccounts = [];
+
+            if(editId) {
+                const b = db.bankAccounts.find(item => item.id === editId);
+                if(b) { b.name = name; b.title = title; b.acc = acc; b.iban = iban; }
+            } else {
+                const newB = { id: 'B_' + Date.now(), name, title, acc, iban };
+                db.bankAccounts.push(newB);
+            }
+
+            saveData();
+            cancelEditBank();
+        }
+
+        function renderBankAccounts() {
+            const tbody = document.getElementById('banks-tbody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+
+            if(!db.bankAccounts || db.bankAccounts.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-slate-400">No bank accounts added yet.</td></tr>`;
+                return;
+            }
+
+            db.bankAccounts.forEach(b => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="py-4 px-4 font-bold text-slate-900 flex items-center gap-2">
+                            <span class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold shadow-sm">BK</span>
+                            ${b.name}
+                        </td>
+                        <td class="py-4 px-4 font-semibold text-slate-800">${b.title}</td>
+                        <td class="py-4 px-4 text-xs font-mono">
+                            <span class="font-bold text-slate-900">A/C #: ${b.acc}</span><br>
+                            <span class="text-slate-500">IBAN: ${b.iban}</span>
+                        </td>
+                        <td class="py-4 px-4 text-center no-print space-x-1">
+                            <button onclick="editBank('${b.id}')" class="text-blue-500 hover:text-blue-700 p-1.5 bg-blue-50 rounded"><i class="fa-solid fa-pen text-xs"></i></button>
+                            <button onclick="deleteBank('${b.id}')" class="text-red-500 hover:text-red-700 p-1.5 bg-red-50 rounded"><i class="fa-solid fa-trash text-xs"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function editBank(id) {
+            const b = db.bankAccounts.find(item => item.id === id);
+            if(!b) return;
+            document.getElementById('edit-bank-id').value = b.id;
+            document.getElementById('b-name').value = b.name;
+            document.getElementById('b-title').value = b.title;
+            document.getElementById('b-acc').value = b.acc;
+            document.getElementById('b-iban').value = b.iban;
+            document.getElementById('bank-form-title').innerText = 'Edit Bank Account';
+            document.getElementById('submit-bank-btn').innerText = 'Update Bank Account';
+            document.getElementById('cancel-bank-btn').classList.remove('hidden');
+        }
+
+        function cancelEditBank() {
+            document.getElementById('form-bank').reset();
+            document.getElementById('edit-bank-id').value = '';
+            document.getElementById('bank-form-title').innerText = 'Add New Bank Account';
+            document.getElementById('submit-bank-btn').innerText = 'Save Bank Account';
+            document.getElementById('cancel-bank-btn').classList.add('hidden');
+        }
+
+        function deleteBank(id) {
+            if(confirm('Kya aap is bank account ko delete karna chahte hain?')) {
+                db.bankAccounts = db.bankAccounts.filter(item => item.id !== id);
+                saveData();
+            }
+        }
+
+        function resetVendorForm() {
+            document.getElementById('form-vendor').reset();
+            document.getElementById('edit-vendor-id').value = '';
+            document.getElementById('vendor-form-title').innerText = 'Add Vendor';
+        }
+
+        function saveVendor(e) {
+            e.preventDefault();
+            const editId = document.getElementById('edit-vendor-id').value;
+            const name = document.getElementById('v-name').value;
+            const contact = document.getElementById('v-contact').value || '';
+
+            if(!db.vendors) db.vendors = [];
+
+            if(editId) {
+                const v = db.vendors.find(item => item.id === editId);
+                if(v) { v.name = name; v.contact = contact; }
+            } else {
+                const newV = { id: 'V_' + Date.now(), name, contact };
+                db.vendors.push(newV);
+            }
+
+            saveData();
+            resetVendorForm();
+            renderVendors();
+        }
+
+        function renderVendors() {
+            const tbody = document.getElementById('vendors-tbody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            if(!db.vendors || db.vendors.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="py-4 text-center text-slate-400">No vendors found.</td></tr>`;
+                return;
+            }
+            db.vendors.forEach(v => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition border-b">
+                        <td class="py-2.5 px-2 font-bold text-slate-800">${v.name}</td>
+                        <td class="py-2.5 px-2 text-slate-600">${v.contact || '-'}</td>
+                        <td class="py-2.5 px-2 text-center space-x-1">
+                            <button onclick="editVendor('${v.id}')" class="text-blue-500 hover:text-blue-700 p-1 bg-blue-50 rounded"><i class="fa-solid fa-pen text-xs"></i></button>
+                            <button onclick="deleteVendor('${v.id}')" class="text-red-500 hover:text-red-700 p-1 bg-blue-50 rounded"><i class="fa-solid fa-trash text-xs"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function editVendor(id) {
+            const v = db.vendors.find(item => item.id === id);
+            if(!v) return;
+            document.getElementById('edit-vendor-id').value = v.id;
+            document.getElementById('v-name').value = v.name;
+            document.getElementById('v-contact').value = v.contact || '';
+            document.getElementById('vendor-form-title').innerText = 'Edit Vendor';
+        }
+
+        function deleteVendor(id) {
+            if(confirm('Kya aap is vendor ko delete karna chahte hain?')) {
+                db.vendors = db.vendors.filter(item => item.id !== id);
+                db.vendorPayments = db.vendorPayments.filter(vp => vp.vendorId !== id);
+                saveData();
+            }
+        }
+
+        function populateVendorDropdowns() {
+            const selectV = document.getElementById('vp-vendor');
+            const selectFilterV = document.getElementById('filter-vendor-payments');
+            const currentFilterVal = selectFilterV ? selectFilterV.value : '';
+
+            let optionsHtml = '<option value="">-- Choose Vendor --</option>';
+            let filterOptionsHtml = '<option value="">Select Vendor to View Statement</option>';
+
+            if(db.vendors) {
+                db.vendors.forEach(v => {
+                    optionsHtml += `<option value="${v.id}">${v.name}</option>`;
+                    filterOptionsHtml += `<option value="${v.id}">${v.name}</option>`;
+                });
+            }
+            if(selectV) selectV.innerHTML = optionsHtml;
+            if(selectFilterV) {
+                selectFilterV.innerHTML = filterOptionsHtml;
+                if(currentFilterVal) selectFilterV.value = currentFilterVal;
+            }
+        }
+
+        function saveVendorPayment(e) {
+            e.preventDefault();
+            const vendorId = document.getElementById('vp-vendor').value;
+            if(!vendorId) return alert('Baraye meharbani vendor select karein!');
+
+            const editId = document.getElementById('edit-vpay-id').value;
+            const date = getDMYValue('vp-date');
+            const details = document.getElementById('vp-details').value || 'Vendor Payment';
+            const bank = document.getElementById('vp-bank').value || 'Cash';
+            const amount = parseFloat(document.getElementById('vp-amount').value) || 0;
+
+            if(!db.vendorPayments) db.vendorPayments = [];
+
+            if(editId) {
+                const vp = db.vendorPayments.find(item => item.id === editId);
+                if(vp) { vp.vendorId = vendorId; vp.date = date; vp.details = details; vp.bank = bank; vp.amount = amount; }
+            } else {
+                const newVp = { id: 'VP_' + Date.now(), vendorId, date, details, bank, amount };
+                db.vendorPayments.push(newVp);
+            }
+
+            saveData();
+            cancelEditVendorPay();
+        }
+
+        function renderVendorPayments() {
+            const vendorId = document.getElementById('filter-vendor-payments').value;
+            const tbody = document.getElementById('vpay-tbody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            const printDateVendor = document.getElementById('print-date-vendor');
+            if(printDateVendor) printDateVendor.innerText = getTodayDDMMYYYY();
+
+            const titleEl = document.getElementById('print-vendor-name-title');
+
+            if(!vendorId) {
+                if(titleEl) titleEl.innerText = 'Select Vendor';
+                tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400">Please select a vendor above to view statement.</td></tr>`;
+                return;
+            }
+
+            const v = db.vendors.find(item => item.id === vendorId);
+            const vName = v ? v.name : 'Unknown Vendor';
+            if(titleEl) titleEl.innerText = vName;
+
+            const vendorPaymentsList = db.vendorPayments ? db.vendorPayments.filter(vp => vp.vendorId === vendorId) : [];
+
+            if(vendorPaymentsList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400">No payments found for this vendor.</td></tr>`;
+                return;
+            }
+
+            let sortedVp = [...vendorPaymentsList].sort((a, b) => parseDateForSort(a.date) - parseDateForSort(b.date));
+
+            sortedVp.forEach(vp => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                        <td class="py-3 px-3 text-slate-600 font-medium">${formatDateToPK(vp.date)}</td>
+                        <td class="py-3 px-3 font-bold text-slate-800">${vName}</td>
+                        <td class="py-3 px-3 text-slate-700">${vp.details} <br><span class="text-xs text-slate-400">Via: ${vp.bank}</span></td>
+                        <td class="py-3 px-3 text-emerald-600 font-bold">Rs. ${vp.amount.toLocaleString()}</td>
+                        <td class="py-3 px-3 text-center space-x-1 col-action">
+                            <button onclick="editVendorPay('${vp.id}')" class="text-blue-500 hover:text-blue-700 p-1 bg-blue-50 rounded"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteVendorPay('${vp.id}')" class="text-red-500 hover:text-red-700 p-1 bg-blue-50 rounded"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function editVendorPay(id) {
+            const vp = db.vendorPayments.find(item => item.id === id);
+            if(!vp) return;
+            document.getElementById('edit-vpay-id').value = vp.id;
+            document.getElementById('vp-vendor').value = vp.vendorId;
+            setDMYValue('vp-date', vp.date);
+            document.getElementById('vp-details').value = vp.details;
+            document.getElementById('vp-bank').value = vp.bank;
+            document.getElementById('vp-amount').value = vp.amount;
+            document.getElementById('vpay-form-heading').innerText = 'Edit Vendor Payment';
+            document.getElementById('submit-vpay-btn').innerText = 'Update Payment';
+            document.getElementById('cancel-vpay-btn').classList.remove('hidden');
+        }
+
+        function cancelEditVendorPay() {
+            document.getElementById('form-vpay').reset();
+            document.getElementById('edit-vpay-id').value = '';
+            document.getElementById('vpay-form-heading').innerText = 'Pay to Vendor';
+            document.getElementById('submit-vpay-btn').innerText = 'Save Payment';
+            document.getElementById('cancel-vpay-btn').classList.add('hidden');
+            setDMYValue('vp-date', getTodayDDMMYYYY());
+        }
+
+        function deleteVendorPay(id) {
+            if(confirm('Kya aap is payment record ko delete karna chahte hain?')) {
+                db.vendorPayments = db.vendorPayments.filter(item => item.id !== id);
+                saveData();
+            }
+        }
+
+        function saveExpense(e) {
+            e.preventDefault();
+            const editId = document.getElementById('edit-exp-id').value;
+            const title = document.getElementById('ex-title').value;
+            const date = getDMYValue('ex-date');
+            const amount = parseFloat(document.getElementById('ex-amount').value) || 0;
+
+            if(!db.expenses) db.expenses = [];
+
+            if(editId) {
+                const ex = db.expenses.find(item => item.id === editId);
+                if(ex) { ex.title = title; ex.date = date; ex.amount = amount; }
+            } else {
+                const newEx = { id: 'EX_' + Date.now(), title, date, amount };
+                db.expenses.push(newEx);
+            }
+
+            saveData();
+            cancelEditExpense();
+        }
+
+        function renderExpenses() {
+            const tbody = document.getElementById('expenses-tbody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            if(!db.expenses || db.expenses.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-slate-400">No office expenses recorded yet.</td></tr>`;
+                return;
+            }
+
+            let sortedEx = [...db.expenses].sort((a, b) => parseDateForSort(a.date) - parseDateForSort(b.date));
+
+            sortedEx.forEach(ex => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                        <td class="py-3 px-4 text-slate-600 font-medium">${formatDateToPK(ex.date)}</td>
+                        <td class="py-3 px-4 font-bold text-slate-800">${ex.title}</td>
+                        <td class="py-3 px-4 text-red-600 font-bold">Rs. ${ex.amount.toLocaleString()}</td>
+                        <td class="py-3 px-4 text-center space-x-1">
+                            <button onclick="editExpense('${ex.id}')" class="text-blue-500 hover:text-blue-700 p-1 bg-blue-50 rounded"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteExpense('${ex.id}')" class="text-red-500 hover:text-red-700 p-1 bg-blue-50 rounded"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function editExpense(id) {
+            const ex = db.expenses.find(item => item.id === id);
+            if(!ex) return;
+            document.getElementById('edit-exp-id').value = ex.id;
+            document.getElementById('ex-title').value = ex.title;
+            setDMYValue('ex-date', ex.date);
+            document.getElementById('ex-amount').value = ex.amount;
+            document.getElementById('exp-form-heading').innerText = 'Edit Office Expense';
+            document.getElementById('submit-exp-btn').innerText = 'Update Expense';
+            document.getElementById('cancel-exp-btn').classList.remove('hidden');
+        }
+
+        function cancelEditExpense() {
+            document.getElementById('form-expense').reset();
+            document.getElementById('edit-exp-id').value = '';
+            document.getElementById('exp-form-heading').innerText = 'Add Office Expense';
+            document.getElementById('submit-exp-btn').innerText = 'Save Expense';
+            document.getElementById('cancel-exp-btn').classList.add('hidden');
+            setDMYValue('ex-date', getTodayDDMMYYYY());
+        }
+
+        function deleteExpense(id) {
+            if(confirm('Kya aap is expense record ko delete karna chahte hain?')) {
+                db.expenses = db.expenses.filter(item => item.id !== id);
+                saveData();
+            }
+        }
+
+        function renderDashboardPartiesSummary() {
+            const tbody = document.getElementById('dashboard-parties-tbody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+
+            if(db.customers.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400">No customers found.</td></tr>`;
+                return;
+            }
+
+            db.customers.forEach(c => {
+                let custBal = 0;
+                db.entries.filter(e => e.customerId === c.id).forEach(e => {
+                    custBal += (e.debit - e.credit);
+                });
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                        <td class="py-3 px-4 font-semibold text-blue-600">${c.code}</td>
+                        <td class="py-3 px-4 font-bold text-slate-800">${c.agency} <span class="text-xs text-slate-500 font-normal">(${c.name})</span></td>
+                        <td class="py-3 px-4 text-slate-600">${c.contact || '-'}</td>
+                        <td class="py-3 px-4 font-extrabold ${custBal >= 0 ? 'text-slate-800' : 'text-blue-600'}">Rs. ${custBal.toLocaleString()}</td>
+                        <td class="py-3 px-4 text-center">
+                            <button onclick="jumpToCustomerLedger('${c.id}')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow">
+                                View Ledger <i class="fa-solid fa-arrow-right ml-1"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function performQuickSearch() {
+            const query = document.getElementById('quick-search-input').value.trim().toLowerCase();
+            const resultDiv = document.getElementById('quick-search-result');
+            resultDiv.innerHTML = '';
+
+            if(!query) {
+                resultDiv.innerHTML = `<p class="text-xs text-red-500">Baraye meharbani koi keyword ya passport number darj karein!</p>`;
+                return;
+            }
+
+            let foundMatches = [];
+            db.entries.forEach(e => {
+                let matchFound = false;
+                if(e.extra && e.extra.pp && e.extra.pp.toLowerCase().includes(query)) matchFound = true;
+                if(e.extra && e.extra.passengerName && e.extra.passengerName.toLowerCase().includes(query)) matchFound = true;
+                if(e.details && e.details.toLowerCase().includes(query)) matchFound = true;
+
+                if(matchFound) {
+                    const cust = db.customers.find(c => c.id === e.customerId);
+                    foundMatches.push({ entry: e, customer: cust });
+                }
+            });
+
+            if(foundMatches.length === 0) {
+                resultDiv.innerHTML = `<div class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-xs"><i class="fa-solid fa-circle-xmark mr-1"></i> Is naam ya number se koi entry mojood nahi hai.</div>`;
+                return;
+            }
+
+            let html = `<div class="space-y-2 mt-2"><h4 class="text-[11px] font-bold text-slate-400 uppercase">Search Results (${foundMatches.length} found):</h4>`;
+            foundMatches.forEach(m => {
+                html += `
+                    <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
+                        <div>
+                            <p class="font-bold text-emerald-900"><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> ${m.entry.details}</p>
+                            <p class="text-[11px] text-slate-600 mt-0.5"><b>Party:</b> ${m.customer ? m.customer.agency + ' (' + m.customer.name + ')' : 'Unknown'} | <b>Type:</b> ${m.entry.type} | <b>Date:</b> ${formatDateToPK(m.entry.date)}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="editEntry('${m.entry.id}')" class="bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1 rounded text-xs font-semibold shadow">
+                                <i class="fa-solid fa-pen mr-1"></i> Edit
+                            </button>
+                            <button onclick="jumpToCustomerLedger('${m.entry.customerId}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded text-xs font-semibold shadow">
+                                View Ledger <i class="fa-solid fa-arrow-right ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+            resultDiv.innerHTML = html;
+        }
+
+        function jumpToCustomerLedger(custId) {
+            switchTab('agent-ledger');
+            const selectAgent = document.getElementById('filter-customer-agent');
+            if(selectAgent) {
+                selectAgent.value = custId;
+                renderAgentLedger();
+            }
+        }
+
+        function saveLedgerEntry(e) {
+            e.preventDefault();
+            const customerId = document.getElementById('l-customer').value;
+            if(!customerId) return alert('Baraye meharbani customer منتخب کریں۔');
+
+            const editId = document.getElementById('edit-entry-id').value;
+            let entryId = editId ? editId : 'E_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+
+            let entry = {
+                id: entryId,
+                customerId,
+                type: currentBookingType,
+                date: getTodayDDMMYYYY(),
+                debit: 0,
+                credit: 0,
+                details: '',
+                extra: {}
+            };
+
+            if(currentBookingType === 'Payment') {
+                entry.date = getDMYValue('p-date');
+                const bank = document.getElementById('p-bank').value;
+                const amt = parseFloat(document.getElementById('p-amount').value) || 0;
+                entry.details = 'Payment via ' + bank;
+                entry.credit = amt;
+            } 
+            else if(currentBookingType === 'General Entry') {
+                entry.date = getDMYValue('gen-date');
+                const nature = document.getElementById('gen-nature').value;
+                const title = document.getElementById('gen-title').value || 'General Entry';
+                const amt = parseFloat(document.getElementById('gen-amount').value) || 0;
+                entry.details = title;
+                if(nature === 'Debit') {
+                    entry.debit = amt;
+                } else {
+                    entry.credit = amt;
+                }
+            }
+            else if(currentBookingType === 'GP Booking') {
+                entry.date = getDMYValue('gp-date');
+                const pkg = document.getElementById('gp-pkg').value;
+                const passengerName = document.getElementById('gp-passenger-name').value;
+                const pp = document.getElementById('gp-pp').value;
+                const vbr = document.getElementById('gp-vbr').value;
+                const roomType = document.getElementById('gp-room-type').value;
+                const amt = parseFloat(document.getElementById('gp-amount').value) || 0;
+
+                rememberPassenger(passengerName);
+
+                let detParts = [];
+                if(pkg) detParts.push(`GP Pkg: ${pkg}`);
+                if(vbr) detParts.push(`VBR: ${vbr}`);
+                if(roomType) detParts.push(`[${roomType}]`);
+                if(passengerName) detParts.push(passengerName);
+                if(pp) detParts.push(`(PP: ${pp})`);
+
+                entry.details = detParts.join(' - ');
+                entry.debit = amt;
+                entry.extra = { pkg, passengerName, pp, vbr, roomType };
+            } 
+            else if(currentBookingType === 'Hotel Booking') {
+                entry.date = getDMYValue('hb-date');
+                const vbr = document.getElementById('hb-vbr').value;
+                const roomType = document.getElementById('hb-room-type').value;
+                const passengerName = document.getElementById('b-passenger-name').value;
+                const pp = document.getElementById('b-pp').value;
+                const visaRate = parseFloat(document.getElementById('hb-visa-rate').value) || 0;
+                const visaRealRate = parseFloat(document.getElementById('hb-visa-real-rate').value) || 0;
+                const m1 = parseFloat(document.getElementById('hb-m1').value) || 0;
+                const mr1 = parseFloat(document.getElementById('hb-mr1').value) || 0;
+                const md1 = parseFloat(document.getElementById('hb-md1').value) || 0;
+                const mdr1 = parseFloat(document.getElementById('hb-mdr1').value) || 0;
+                const m2 = parseFloat(document.getElementById('hb-m2').value) || 0;
+                const mr2 = parseFloat(document.getElementById('hb-mr2').value) || 0;
+                const md2 = parseFloat(document.getElementById('hb-md2').value) || 0;
+                const mdr2 = parseFloat(document.getElementById('hb-mdr2').value) || 0;
+                const hotelReal = parseFloat(document.getElementById('hb-hotel-real').value) || 0;
+                const vendor = document.getElementById('hb-vendor').value;
+
+                rememberPassenger(passengerName);
+                rememberRate(visaRealRate);
+                rememberRate(hotelReal);
+
+                const visaTotal = visaRate * visaRealRate;
+                const stay1 = ((m1 * mr1) + (md1 * mdr1)) * hotelReal;
+                const stay2 = ((m2 * mr2) + (md2 * mdr2)) * hotelReal;
+                const total = visaTotal + stay1 + stay2;
+
+                let detParts = [];
+                detParts.push('Hotel Pkg');
+                if(vbr) detParts.push(`VBR: ${vbr}`);
+                if(roomType) detParts.push(`[${roomType}]`);
+                if(passengerName) detParts.push(passengerName);
+                if(pp) detParts.push(`(PP: ${pp})`);
+
+                entry.details = detParts.join(' - ');
+                entry.debit = total;
+                entry.extra = { vbr, roomType, passengerName, pp, visaRate, visaRealRate, visaTotal, m1, mr1, md1, mdr1, m2, mr2, md2, mdr2, hotelReal, stay1, stay2, vendor };
+            } 
+            else if(currentBookingType === 'Ticket') {
+                entry.date = getDMYValue('t-date');
+                const passengerName = document.getElementById('b-passenger-name').value;
+                const pp = document.getElementById('b-pp').value;
+                const pnr = document.getElementById('t-pnr').value;
+                const airline = document.getElementById('t-airline').value;
+                const amt = parseFloat(document.getElementById('t-amount').value) || 0;
+
+                rememberPassenger(passengerName);
+
+                let detParts = [];
+                detParts.push(airline ? `Ticket (${airline})` : 'Ticket');
+                if(pnr) detParts.push(`PNR: ${pnr}`);
+                if(passengerName) detParts.push(passengerName);
+                if(pp) detParts.push(`(PP: ${pp})`);
+
+                entry.details = detParts.join(' - ');
+                entry.debit = amt;
+                entry.extra = { pnr, airline, passengerName, pp };
+            } 
+            else if(currentBookingType === 'Visa Only') {
+                entry.date = getDMYValue('v-date');
+                const passengerName = document.getElementById('b-passenger-name').value;
+                const pp = document.getElementById('b-pp').value;
+                const ref = document.getElementById('v-ref').value.trim();
+                const rate = parseFloat(document.getElementById('v-rate').value) || 0;
+                const realRate = parseFloat(document.getElementById('v-real-rate').value) || 0;
+
+                rememberPassenger(passengerName);
+                rememberRate(realRate);
+
+                const total = rate * realRate;
+                let detParts = [];
+                
+                if(ref !== '') {
+                    detParts.push(`Visa Only (Ref: ${ref})`);
+                } else {
+                    detParts.push('Visa Only');
+                }
+
+                if(passengerName) detParts.push(passengerName);
+                if(pp) detParts.push(`(PP: ${pp})`);
+
+                entry.details = detParts.join(' - ');
+                entry.debit = total;
+                entry.extra = { ref, rate, realRate, total, passengerName, pp };
+            } 
+            else if(currentBookingType === 'Only Hotel Booking') {
+                entry.date = getDMYValue('oh-date');
+                const passengerName = document.getElementById('b-passenger-name').value;
+                const pp = document.getElementById('b-pp').value;
+                const vbr = document.getElementById('oh-vbr').value;
+                const roomType = document.getElementById('oh-room-type').value;
+                const m1 = parseFloat(document.getElementById('oh-m1').value) || 0;
+                const mr1 = parseFloat(document.getElementById('oh-mr1').value) || 0;
+                const md1 = parseFloat(document.getElementById('oh-md1').value) || 0;
+                const mdr1 = parseFloat(document.getElementById('oh-mdr1').value) || 0;
+                const m2 = parseFloat(document.getElementById('oh-m2').value) || 0;
+                const mr2 = parseFloat(document.getElementById('oh-mr2').value) || 0;
+                const md2 = parseFloat(document.getElementById('oh-md2').value) || 0;
+                const mdr2 = parseFloat(document.getElementById('oh-mdr2').value) || 0;
+                const hotelReal = parseFloat(document.getElementById('oh-hotel-real').value) || 0;
+
+                rememberPassenger(passengerName);
+                rememberRate(hotelReal);
+
+                const stay1 = ((m1 * mr1) + (md1 * mdr1)) * hotelReal;
+                const stay2 = ((m2 * mr2) + (md2 * mdr2)) * hotelReal;
+                const total = stay1 + stay2;
+
+                let detParts = [];
+                detParts.push('Only Hotel');
+                if(vbr) detParts.push(`VBR: ${vbr}`);
+                if(roomType) detParts.push(`[${roomType}]`);
+                if(passengerName) detParts.push(passengerName);
+                if(pp) detParts.push(`(PP: ${pp})`);
+
+                entry.details = detParts.join(' - ');
+                entry.debit = total;
+                entry.extra = { vbr, roomType, passengerName, pp, m1, mr1, md1, mdr1, m2, mr2, md2, mdr2, hotelReal, stay1, stay2 };
+            }
+
+            if(editId) {
+                db.entries = db.entries.filter(en => en.id !== editId);
+            }
+
+            db.entries.push(entry);
+            saveData();
+            alert(editId ? 'Ledger entry update ho gayi hai!' : 'Ledger entry kamiyabi se save ho gayi hai!');
+            cancelEditEntry();
+        }
+
+        function rememberPassenger(name) {
+            if(!name || name.trim() === '') return;
+            let list = JSON.parse(localStorage.getItem('al_haq_passengers_memory') || '[]');
+            if(!list.includes(name.trim())) {
+                list.push(name.trim());
+                localStorage.setItem('al_haq_passengers_memory', JSON.stringify(list));
+                updateSuggestionsLists();
+            }
+        }
+
+        function editEntry(entryId) {
+            const entry = db.entries.find(en => en.id === entryId);
+            if(!entry) return;
+
+            switchTab('ledger-entry');
+            
+            let bType = entry.type;
+            if(bType === 'General Entry' || (!['Payment', 'GP Booking', 'Hotel Booking', 'Ticket', 'Visa Only', 'Only Hotel Booking'].includes(bType))) {
+                bType = 'General Entry';
+            }
+            
+            setBookingType(bType);
+            document.getElementById('edit-entry-id').value = entry.id;
+            document.getElementById('l-customer').value = entry.customerId;
+            document.getElementById('ledger-form-heading').innerText = 'Edit Ledger Entry';
+            document.getElementById('submit-entry-btn').innerText = 'Update Entry';
+            document.getElementById('cancel-edit-btn').classList.remove('hidden');
+
+            if(entry.type === 'Payment') {
+                setDMYValue('p-date', entry.date);
+                document.getElementById('p-bank').value = entry.details.replace('Payment via ', '');
+                document.getElementById('p-amount').value = entry.credit;
+            } else if(bType === 'General Entry') {
+                setDMYValue('gen-date', entry.date);
+                document.getElementById('gen-title').value = entry.details;
+                if(entry.debit > 0) {
+                    document.getElementById('gen-nature').value = 'Debit';
+                    document.getElementById('gen-amount').value = entry.debit;
+                } else {
+                    document.getElementById('gen-nature').value = 'Credit';
+                    document.getElementById('gen-amount').value = entry.credit;
+                }
+            } else if(entry.type === 'GP Booking') {
+                setDMYValue('gp-date', entry.date);
+                document.getElementById('gp-pkg').value = entry.extra.pkg || '';
+                document.getElementById('gp-passenger-name').value = entry.extra.passengerName || '';
+                document.getElementById('gp-pp').value = entry.extra.pp || '';
+                document.getElementById('gp-vbr').value = entry.extra.vbr || '';
+                if(entry.extra.roomType) document.getElementById('gp-room-type').value = entry.extra.roomType;
+                document.getElementById('gp-amount').value = entry.debit;
+            } else if(entry.type === 'Hotel Booking') {
+                setDMYValue('hb-date', entry.date);
+                document.getElementById('hb-vbr').value = entry.extra.vbr || '';
+                if(entry.extra.roomType) document.getElementById('hb-room-type').value = entry.extra.roomType;
+                document.getElementById('b-passenger-name').value = entry.extra.passengerName || '';
+                document.getElementById('b-pp').value = entry.extra.pp || '';
+                document.getElementById('hb-visa-rate').value = entry.extra.visaRate || '';
+                document.getElementById('hb-visa-real-rate').value = entry.extra.visaRealRate || '';
+                document.getElementById('hb-m1').value = entry.extra.m1 || '';
+                document.getElementById('hb-mr1').value = entry.extra.mr1 || '';
+                document.getElementById('hb-md1').value = entry.extra.md1 || '';
+                document.getElementById('hb-mdr1').value = entry.extra.mdr1 || '';
+                document.getElementById('hb-m2').value = entry.extra.m2 || '';
+                document.getElementById('hb-mr2').value = entry.extra.mr2 || '';
+                document.getElementById('hb-md2').value = entry.extra.md2 || '';
+                document.getElementById('hb-mdr2').value = entry.extra.mdr2 || '';
+                document.getElementById('hb-hotel-real').value = entry.extra.hotelReal || '';
+                document.getElementById('hb-vendor').value = entry.extra.vendor || '';
+            } else if(entry.type === 'Ticket') {
+                setDMYValue('t-date', entry.date);
+                document.getElementById('b-passenger-name').value = entry.extra.passengerName || '';
+                document.getElementById('b-pp').value = entry.extra.pp || '';
+                document.getElementById('t-pnr').value = entry.extra.pnr || '';
+                document.getElementById('t-airline').value = entry.extra.airline || '';
+                document.getElementById('t-amount').value = entry.debit;
+            } else if(entry.type === 'Visa Only') {
+                setDMYValue('v-date', entry.date);
+                document.getElementById('b-passenger-name').value = entry.extra.passengerName || '';
+                document.getElementById('b-pp').value = entry.extra.pp || '';
+                document.getElementById('v-ref').value = entry.extra.ref || '';
+                document.getElementById('v-rate').value = entry.extra.rate || '';
+                document.getElementById('v-real-rate').value = entry.extra.realRate || '';
+            } else if(entry.type === 'Only Hotel Booking') {
+                setDMYValue('oh-date', entry.date);
+                document.getElementById('b-passenger-name').value = entry.extra.passengerName || '';
+                document.getElementById('b-pp').value = entry.extra.pp || '';
+                document.getElementById('oh-vbr').value = entry.extra.vbr || '';
+                if(entry.extra.roomType) document.getElementById('oh-room-type').value = entry.extra.roomType;
+                document.getElementById('oh-m1').value = entry.extra.m1 || '';
+                document.getElementById('oh-mr1').value = entry.extra.mr1 || '';
+                document.getElementById('oh-md1').value = entry.extra.md1 || '';
+                document.getElementById('oh-mdr1').value = entry.extra.mdr1 || '';
+                document.getElementById('oh-m2').value = entry.extra.m2 || '';
+                document.getElementById('oh-mr2').value = entry.extra.mr2 || '';
+                document.getElementById('oh-md2').value = entry.extra.md2 || '';
+                document.getElementById('oh-mdr2').value = entry.extra.mdr2 || '';
+                document.getElementById('oh-hotel-real').value = entry.extra.hotelReal || '';
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function cancelEditEntry() {
+            document.getElementById('form-ledger').reset();
+            document.getElementById('edit-entry-id').value = '';
+            document.getElementById('ledger-form-heading').innerText = 'Customer Ledger Entry';
+            document.getElementById('submit-entry-btn').innerText = 'Add Entry';
+            document.getElementById('cancel-edit-btn').classList.add('hidden');
+            setBookingType('Payment');
+            setDMYValue('p-date', getTodayDDMMYYYY());
+        }
+
+        function deleteEntry(entryId) {
+            if(confirm('Kya aap waqai is entry ko delete karna chahte hain?')) {
+                db.entries = db.entries.filter(en => en.id !== entryId);
+                saveData();
+            }
+        }
+
+        function populateCustomerDropdowns() {
+            const selectL = document.getElementById('l-customer');
+            const selectAgent = document.getElementById('filter-customer-agent');
+            const currentAgentVal = selectAgent ? selectAgent.value : '';
+            
+            let optionsHtml = '<option value="">-- Choose Customer --</option>';
+            db.customers.forEach(c => {
+                optionsHtml += `<option value="${c.id}">${c.agency} (${c.name})</option>`;
+            });
+
+            if(selectL) selectL.innerHTML = optionsHtml;
+            if(selectAgent) {
+                selectAgent.innerHTML = '<option value="">Select Customer to View Ledger</option>' + optionsHtml;
+                if(currentAgentVal) selectAgent.value = currentAgentVal;
+            }
+        }
+
+        function sortEntriesProperly(entriesList) {
+            return [...entriesList].sort((a, b) => {
+                const aIsPrev = (a.details || '').toUpperCase().includes('PREVIOUS BALANCE') || (a.details || '').toUpperCase().includes('OPENING BALANCE');
+                const bIsPrev = (b.details || '').toUpperCase().includes('PREVIOUS BALANCE') || (b.details || '').toUpperCase().includes('OPENING BALANCE');
+                if(aIsPrev && !bIsPrev) return -1;
+                if(!aIsPrev && bIsPrev) return 1;
+
+                const dateDiff = parseDateForSort(a.date) - parseDateForSort(b.date);
+                if(dateDiff !== 0) return dateDiff;
+
+                return String(a.id).localeCompare(String(b.id));
+            });
+        }
+
+        let currentAgentBalance = 0;
+        let currentAgentName = '';
+
+        function renderAgentLedger() {
+            const customerId = document.getElementById('filter-customer-agent').value;
+            const tbody = document.getElementById('agent-ledger-tbody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+
+            if(!customerId) {
+                tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400">Please select a customer above.</td></tr>`;
+                return;
+            }
+
+            const cust = db.customers.find(c => c.id === customerId);
+            if(cust) {
+                currentAgentName = `${cust.code}_${cust.agency}`.replace(/[^a-zA-Z0-9]/g, '_');
+                document.getElementById('print-party-name-agent').innerText = `${cust.agency} (${cust.name})`;
+                document.getElementById('print-date-agent').innerText = getTodayDDMMYYYY();
+            }
+
+            let customerEntries = sortEntriesProperly(db.entries.filter(e => e.customerId === customerId));
+
+            if(customerEntries.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400">No ledger entries found for this customer.</td></tr>`;
+                currentAgentBalance = 0;
+                return;
+            }
+
+            let balance = 0;
+            customerEntries.forEach(e => {
+                balance += (e.debit - e.credit);
+                let detailTd = `<td class="py-3 px-3 text-xs text-slate-400">-</td>`;
+                if(e.extra) {
+                    if(e.type === 'GP Booking') {
+                        let parts = [];
+                        if(e.extra.pkg) parts.push(`<b>Package:</b> ${e.extra.pkg}`);
+                        if(e.extra.vbr) parts.push(`<b>Voucher (VBR):</b> ${e.extra.vbr}`);
+                        if(e.extra.roomType) parts.push(`<b>Room:</b> ${e.extra.roomType}`);
+                        detailTd = `<td class="py-3 px-3 text-xs text-slate-700 leading-relaxed">${parts.join('<br>')}</td>`;
+                    } else if(e.extra.roomType) {
+                        let parts = [];
+                        if(e.extra.roomType) parts.push(`<b>Room:</b> ${e.extra.roomType}`);
+                        if(e.extra.visaRate) parts.push(`<b>Visa:</b> ${e.extra.visaRate} SAR × ${e.extra.visaRealRate} = ${e.extra.visaTotal}`);
+                        if(e.extra.m1 > 0 || e.extra.md1 > 0) parts.push(`<b>Stay 1:</b> Makkah (${e.extra.m1}N×${e.extra.mr1}) | Madina (${e.extra.md1}N×${e.extra.mdr1})`);
+                        if(e.extra.m2 > 0 || e.extra.md2 > 0) parts.push(`<b>Stay 2:</b> Makkah (${e.extra.m2}N×${e.extra.mr2}) | Madina (${e.extra.md2}N×${e.extra.mdr2})`);
+                        if(e.extra.stay1 !== undefined || e.extra.stay2 !== undefined) parts.push(`<b>Hotel Rate:</b> × ${e.extra.hotelReal} = ${(e.extra.stay1 || 0) + (e.extra.stay2 || 0)}`);
+                        detailTd = `<td class="py-3 px-3 text-xs text-slate-700 leading-relaxed">${parts.join('<br>')}</td>`;
+                    } else if(e.type === 'Visa Only' && e.extra.rate) {
+                        detailTd = `<td class="py-3 px-3 text-xs text-slate-700"><b>Visa:</b> ${e.extra.rate} SAR × ${e.extra.realRate} = ${e.extra.total}</td>`;
+                    }
+                }
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                        <td class="py-3 px-3 text-slate-600 font-medium">${formatDateToPK(e.date)} <br><span class="text-xs px-2 py-0.5 rounded font-semibold ${e.type === 'Payment' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'}">${e.type}</span></td>
+                        <td class="py-3 px-3 font-semibold text-slate-800">${e.details}</td>
+                        ${detailTd}
+                        <td class="py-3 px-3 text-red-600 font-bold">Rs. ${e.debit.toLocaleString()}</td>
+                        <td class="py-3 px-3 text-emerald-600 font-bold">Rs. ${e.credit.toLocaleString()}</td>
+                        <td class="py-3 px-3 font-extrabold ${balance >= 0 ? 'text-slate-800' : 'text-blue-600'}">Rs. ${balance.toLocaleString()}</td>
+                        <td class="py-3 px-3 text-center space-x-1 col-action">
+                            <button onclick="editEntry('${e.id}')" class="text-blue-500 hover:text-blue-700 p-1 bg-blue-50 rounded" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteEntry('${e.id}')" class="text-red-500 hover:text-red-700 p-1 bg-blue-50 rounded" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+            currentAgentBalance = balance;
+        }
+
+        function shareOnWhatsApp() {
+            const customerId = document.getElementById('filter-customer-agent').value;
+            if(!customerId) {
+                alert('Baraye meharbani pehle koi customer select karein!');
+                return;
+            }
+            const cust = db.customers.find(c => c.id === customerId);
+            const custFullName = cust ? `${cust.agency} (${cust.name})` : 'Valued Customer';
+            const phone = cust && cust.contact ? cust.contact.replace(/[^0-9]/g, '') : '';
+            
+            if(!phone) {
+                alert('Is customer ka WhatsApp contact number mojood nahi hai!');
+                return;
+            }
+
+            const currentDate = getTodayDDMMYYYY();
+            const msg = `Dear Trade Partner, Your Ledger Statement For *${custFullName}* AS AT ${currentDate} is *Rs. ${currentAgentBalance.toLocaleString()}*. Please clear your outstanding Balance at Urgent Basis.\n\nRegards,\nAl Haq Hajj & Umrah Services`;
+            
+            navigator.clipboard.writeText(msg).catch(err => console.log('Clipboard err:', err));
+
+            const encodedMsg = encodeURIComponent(msg);
+            const url = `https://api.whatsapp.com/send?phone=${phone}&text=${encodedMsg}`;
+            window.open(url, '_blank');
+        }
+
+        function triggerPrintWithCustomTitle(type) {
+            let originalTitle = document.title;
+            let customTitle = "Al_Haq_Travels_Statement";
+
+            if(type === 'Agent') {
+                const customerId = document.getElementById('filter-customer-agent').value;
+                if(!customerId) {
+                    alert('Baraye meharbani pehle customer select karein!');
+                    return;
+                }
+                const cust = db.customers.find(c => c.id === customerId);
+                const safeAgency = cust ? `${cust.code}_${cust.agency}`.replace(/[^a-zA-Z0-9]/g, '_') : 'Customer';
+                customTitle = `${safeAgency}_${currentAgentBalance}_PKR`;
+            } else if(type === 'Master') {
+                customTitle = `Al_Haq_Master_Ledger_${getTodayDDMMYYYY()}`;
+            } else if(type === 'Vendor') {
+                const vendorId = document.getElementById('filter-vendor-payments').value;
+                if(!vendorId) {
+                    alert('Baraye meharbani pehle vendor select karein!');
+                    return;
+                }
+                const v = db.vendors.find(item => item.id === vendorId);
+                const safeVendor = v ? v.name.replace(/[^a-zA-Z0-9]/g, '_') : 'Vendor';
+                customTitle = `Vendor_${safeVendor}_Statement_${getTodayDDMMYYYY()}`;
+            } else if(type === 'Bank') {
+                customTitle = `Al_Haq_Bank_Accounts_${getTodayDDMMYYYY()}`;
+            }
+
+            document.title = customTitle;
+            window.print();
+            setTimeout(() => {
+                document.title = originalTitle;
+            }, 1000);
+        }
+
+        function renderMasterLedger() {
+            const tbody = document.getElementById('master-ledger-tbody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            document.getElementById('print-date-master').innerText = getTodayDDMMYYYY();
+
+            if(db.entries.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-slate-400">No entries found in master ledger.</td></tr>`;
+                return;
+            }
+
+            let sortedEntries = sortEntriesProperly(db.entries);
+
+            sortedEntries.forEach(e => {
+                const cust = db.customers.find(c => c.id === e.customerId);
+                const custName = cust ? `${cust.agency} (${cust.name})` : 'Unknown Customer';
+
+                let detailTd = `<td class="py-3 px-3 text-xs text-slate-400">-</td>`;
+                if(e.extra) {
+                    if(e.type === 'GP Booking') {
+                        let parts = [];
+                        if(e.extra.pkg) parts.push(`<b>Package:</b> ${e.extra.pkg}`);
+                        if(e.extra.vbr) parts.push(`<b>Voucher (VBR):</b> ${e.extra.vbr}`);
+                        if(e.extra.roomType) parts.push(`<b>Room:</b> ${e.extra.roomType}`);
+                        detailTd = `<td class="py-3 px-3 text-xs text-slate-700 leading-relaxed">${parts.join('<br>')}</td>`;
+                    } else if(e.extra.roomType) {
+                        let parts = [];
+                        if(e.extra.roomType) parts.push(`<b>Room:</b> ${e.extra.roomType}`);
+                        if(e.extra.vendor) parts.push(`<b>Vendor:</b> ${e.extra.vendor}`);
+                        if(e.extra.visaRate) parts.push(`<b>Visa:</b> ${e.extra.visaRate} SAR × ${e.extra.visaRealRate} = ${e.extra.visaTotal}`);
+                        if(e.extra.stay1 || e.extra.stay2) parts.push(`<b>Hotel Total:</b> ${(e.extra.stay1 || 0) + (e.extra.stay2 || 0)}`);
+                        detailTd = `<td class="py-3 px-3 text-xs text-slate-700 leading-relaxed">${parts.join('<br>')}</td>`;
+                    } else if(e.type === 'Visa Only' && e.extra.rate) {
+                        detailTd = `<td class="py-3 px-3 text-xs text-slate-700"><b>Visa:</b> ${e.extra.rate} SAR × ${e.extra.realRate} = ${e.extra.total}</td>`;
+                    }
+                }
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                        <td class="py-3 px-3 text-slate-600 font-medium">${formatDateToPK(e.date)} <br><span class="text-xs px-2 py-0.5 rounded font-semibold ${e.type === 'Payment' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'}">${e.type}</span></td>
+                        <td class="py-3 px-3 font-bold text-slate-800">${custName}</td>
+                        <td class="py-3 px-3 font-semibold text-slate-700">${e.details}</td>
+                        ${detailTd}
+                        <td class="py-3 px-3 text-red-600 font-bold">Rs. ${e.debit.toLocaleString()}</td>
+                        <td class="py-3 px-3 text-emerald-600 font-bold">Rs. ${e.credit.toLocaleString()}</td>
+                        <td class="py-3 px-3 font-extrabold text-slate-800">Rs. ${(e.debit - e.credit).toLocaleString()}</td>
+                        <td class="py-3 px-3 text-center space-x-1 col-action">
+                            <button onclick="editEntry('${e.id}')" class="text-blue-500 hover:text-blue-700 p-1 bg-blue-50 rounded" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteEntry('${e.id}')" class="text-red-500 hover:text-red-700 p-1 bg-blue-50 rounded" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function updateStats() {
+            let totalReceivable = 0;
+            let totalBookingsDebit = 0;
+            db.entries.forEach(e => {
+                totalReceivable += (e.debit - e.credit);
+                if(e.debit > 0) totalBookingsDebit += e.debit;
+            });
+
+            let totalVPaid = 0;
+            if(db.vendorPayments) {
+                db.vendorPayments.forEach(vp => totalVPaid += vp.amount);
+            }
+
+            let totalExpenses = 0;
+            if(db.expenses) {
+                db.expenses.forEach(ex => totalExpenses += ex.amount);
+            }
+
+            let netProfit = totalBookingsDebit - (totalVPaid + totalExpenses);
+
+            document.getElementById('stat-total-receivable').innerText = 'Rs. ' + totalReceivable.toLocaleString();
+            document.getElementById('stat-total-vpaid').innerText = 'Rs. ' + totalVPaid.toLocaleString();
+            document.getElementById('stat-total-expenses').innerText = 'Rs. ' + totalExpenses.toLocaleString();
+            document.getElementById('stat-net-profit').innerText = 'Rs. ' + netProfit.toLocaleString();
+        }
+    </script>
+</body>
+</html>
