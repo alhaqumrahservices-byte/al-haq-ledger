@@ -103,7 +103,7 @@
             <header class="bg-white shadow-sm h-20 flex items-center justify-between px-8 border-b border-slate-200 no-print">
                 <div>
                     <h1 class="text-2xl font-bold text-slate-800" id="page-title">Dashboard Overview</h1>
-                    <p class="text-xs text-slate-500 mt-0.5">Al Haq Hajj & Umrah Services Ledger System (Triple Sync Ready)</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Al Haq Hajj & Umrah Services Ledger System (Triple Sync Active)</p>
                 </div>
                 <div class="flex items-center gap-3 flex-wrap">
                     <input type="file" id="import-json-file" accept=".json" onchange="importBackupJSON(event)" class="hidden">
@@ -569,7 +569,6 @@
                 <!-- 4. AGENT LEDGER TAB -->
                 <div id="tab-agent-ledger" class="space-y-6 hidden">
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                        <!-- CLEANED & COMPACT PROFESSIONAL PRINT HEADER WITH LOGO -->
                         <div class="print-header">
                             <div class="flex items-center gap-2">
                                 <div class="w-9 h-9 rounded-lg bg-amber-500 text-white flex items-center justify-center text-sm font-bold shadow">
@@ -624,7 +623,6 @@
                 <!-- 5. MASTER LEDGER TAB -->
                 <div id="tab-master-ledger" class="space-y-6 hidden">
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                        <!-- CLEANED & COMPACT MASTER PRINT HEADER WITH LOGO -->
                         <div class="print-header">
                             <div class="flex items-center gap-2">
                                 <div class="w-9 h-9 rounded-lg bg-amber-500 text-white flex items-center justify-center text-sm font-bold shadow">
@@ -675,9 +673,7 @@
 
                 <!-- 6. VENDORS & PAYMENTS TAB -->
                 <div id="tab-vendors" class="space-y-6 hidden">
-                    <!-- NO-PRINT FORMS & MANAGEMENT SECTION -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 no-print">
-                        <!-- Add Vendor Form -->
                         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
                             <h3 class="text-lg font-bold text-slate-800 mb-4 pb-2 border-b" id="vendor-form-title">Add Vendor</h3>
                             <form id="form-vendor" onsubmit="saveVendor(event)" class="space-y-4">
@@ -697,7 +693,6 @@
                             </form>
                         </div>
 
-                        <!-- Vendor Payment Form -->
                         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:col-span-2">
                             <h3 class="text-lg font-bold text-slate-800 mb-4 pb-2 border-b" id="vpay-form-heading">Pay to Vendor</h3>
                             <form id="form-vpay" onsubmit="saveVendorPayment(event)" class="space-y-4">
@@ -736,7 +731,6 @@
                         </div>
                     </div>
 
-                    <!-- Vendors List & Party Wise Print Statement -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 no-print">
                             <h3 class="text-md font-bold text-slate-800 mb-3">Saved Vendors List</h3>
@@ -755,7 +749,6 @@
                         </div>
 
                         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:col-span-2">
-                            <!-- CLEANED & COMPACT VENDOR PRINT HEADER WITH LOGO -->
                             <div class="print-header">
                                 <div class="flex items-center gap-2">
                                     <div class="w-9 h-9 rounded-lg bg-amber-500 text-white flex items-center justify-center text-sm font-bold shadow">
@@ -860,7 +853,6 @@
                             <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mt-1">Official Bank Accounts Details</p>
                         </div>
 
-                        <!-- ADD / EDIT BANK ACCOUNT FORM (NO-PRINT) -->
                         <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 mb-6 no-print">
                             <h3 class="text-md font-bold text-slate-800 mb-4" id="bank-form-title">Add New Bank Account</h3>
                             <form id="form-bank" onsubmit="saveBank(event)" class="space-y-4">
@@ -892,7 +884,6 @@
                             </form>
                         </div>
 
-                        <!-- BANK ACCOUNTS TABLE -->
                         <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
                             <table class="w-full text-left border-collapse text-sm">
                                 <thead>
@@ -1059,19 +1050,18 @@
         // ----------------------------------------------------
         // HYBRID INSTANT LOAD + FIREBASE + GOOGLE SHEETS SYNC
         // ----------------------------------------------------
-        // Firebase Config (apne asli Firebase project ki details yahan rakhein)
         const firebaseConfig = {
-            apiKey: "",
-            authDomain: "",
-            databaseURL: "",
-            projectId: "",
-            storageBucket: "",
-            messagingSenderId: "",
-            appId: ""
+            apiKey: "AIzaSyAFYtHHuzZjet-z4dmZs_HKQ_h_ND4-HHE",
+            authDomain: "alhaqledger.firebaseapp.com",
+            databaseURL: "https://alhaqledger-default-rtdb.firebaseio.com",
+            projectId: "alhaqledger",
+            storageBucket: "alhaqledger.firebasestorage.app",
+            messagingSenderId: "208330896463",
+            appId: "1:208330896463:web:ddf7ac0811e05a515b663a",
+            measurementId: "G-M21NK7KKF5"
         };
 
-        // Google Apps Script Web App URL (apna Web App link yahan rakhein)
-        const GOOGLE_SHEET_WEB_APP_URL = "";
+        const GOOGLE_SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxcBH3C4P4H-l9oUQ6YAYnIr_BjgnZdxXDdPgtKuvKRHD1fLZ1bhJV2ApI8tZcXGU20/exec";
 
         let db = JSON.parse(localStorage.getItem('travel_agency_db')) || { customers: [], entries: [], vendors: [], vendorPayments: [], expenses: [], bankAccounts: [] };
         let isFirebaseInitialized = false;
@@ -1084,14 +1074,6 @@
                 { id: 'B_4', name: 'MCB Islamic Bank Ltd.', title: 'AL-HAQ HAJJ & UMRAH SERVICES', acc: '2191-005096420001', iban: 'PK77 MCIB 2191005096420001' }
             ];
             localStorage.setItem('travel_agency_db', JSON.stringify(db));
-        }
-
-        function hasValidFirebaseConfig(cfg) {
-            return Boolean(cfg && cfg.apiKey && cfg.databaseURL && cfg.projectId);
-        }
-
-        function hasValidSheetUrl(url) {
-            return Boolean(url && typeof url === 'string' && url.trim().startsWith('https://script.google.com/'));
         }
 
         function exportBackupJSON() {
@@ -1143,46 +1125,40 @@
             refreshActiveViews();
         });
 
-        if (hasValidFirebaseConfig(firebaseConfig)) {
-            try {
-                firebase.initializeApp(firebaseConfig);
-                const firebaseDb = firebase.database();
-                isFirebaseInitialized = true;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            const firebaseDb = firebase.database();
+            isFirebaseInitialized = true;
 
-                firebaseDb.ref('al_haq_travels_db').on('value', (snapshot) => {
-                    const serverData = snapshot.val();
-                    if(serverData) {
-                        db = serverData;
-                        if(!db.customers) db.customers = [];
-                        if(!db.entries) db.entries = [];
-                        if(!db.vendors) db.vendors = [];
-                        if(!db.vendorPayments) db.vendorPayments = [];
-                        if(!db.expenses) db.expenses = [];
-                        if(!db.bankAccounts) db.bankAccounts = [];
-                        localStorage.setItem('travel_agency_db', JSON.stringify(db));
-                        document.getElementById('sync-status').className = "text-xs font-semibold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800";
-                        document.getElementById('sync-status').innerHTML = '<i class="fa-solid fa-cloud-arrow-up mr-1"></i> Multi-Sync Active (Firebase + Sheets)';
-                        updateSuggestionsLists();
-                        refreshActiveViews();
-                    } else {
-                        firebaseDb.ref('al_haq_travels_db').set(db);
-                    }
-                }, (error) => {
-                    document.getElementById('sync-status').className = "text-xs font-semibold px-3 py-1 rounded-full bg-red-100 text-red-800";
-                    document.getElementById('sync-status').innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i> Sync Offline (Local Mode)';
-                });
-            } catch (e) {
-                document.getElementById('sync-status').className = "text-xs font-semibold px-3 py-1 rounded-full bg-blue-100 text-blue-800";
-                document.getElementById('sync-status').innerHTML = '<i class="fa-solid fa-database mr-1"></i> Local Storage Mode';
-            }
-        } else {
+            firebaseDb.ref('al_haq_travels_db').on('value', (snapshot) => {
+                const serverData = snapshot.val();
+                if(serverData) {
+                    db = serverData;
+                    if(!db.customers) db.customers = [];
+                    if(!db.entries) db.entries = [];
+                    if(!db.vendors) db.vendors = [];
+                    if(!db.vendorPayments) db.vendorPayments = [];
+                    if(!db.expenses) db.expenses = [];
+                    if(!db.bankAccounts) db.bankAccounts = [];
+                    localStorage.setItem('travel_agency_db', JSON.stringify(db));
+                    document.getElementById('sync-status').className = "text-xs font-semibold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800";
+                    document.getElementById('sync-status').innerHTML = '<i class="fa-solid fa-cloud-arrow-up mr-1"></i> Multi-Sync Active (Firebase + Sheets)';
+                    updateSuggestionsLists();
+                    refreshActiveViews();
+                } else {
+                    firebaseDb.ref('al_haq_travels_db').set(db);
+                }
+            }, (error) => {
+                document.getElementById('sync-status').className = "text-xs font-semibold px-3 py-1 rounded-full bg-red-100 text-red-800";
+                document.getElementById('sync-status').innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i> Sync Offline (Local Mode)';
+            });
+        } catch (e) {
             document.getElementById('sync-status').className = "text-xs font-semibold px-3 py-1 rounded-full bg-blue-100 text-blue-800";
-            document.getElementById('sync-status').innerHTML = '<i class="fa-solid fa-database mr-1"></i> Local Ready (Awaiting Cloud Keys)';
+            document.getElementById('sync-status').innerHTML = '<i class="fa-solid fa-database mr-1"></i> Local Storage Mode';
         }
 
-        // GOOGLE SHEET AUTO SYNC FUNCTION
         function syncToGoogleSheet() {
-            if(!hasValidSheetUrl(GOOGLE_SHEET_WEB_APP_URL)) return;
+            if(!GOOGLE_SHEET_WEB_APP_URL || GOOGLE_SHEET_WEB_APP_URL.includes('YOUR_GOOGLE_APPS_SCRIPT')) return;
             fetch(GOOGLE_SHEET_WEB_APP_URL, {
                 method: 'POST',
                 mode: 'no-cors',
@@ -1369,7 +1345,6 @@
             }
         }
 
-        // BANK ACCOUNTS MANAGEMENT
         function saveBank(e) {
             e.preventDefault();
             const editId = document.getElementById('edit-bank-id').value;
@@ -1451,7 +1426,6 @@
             }
         }
 
-        // VENDORS MANAGEMENT
         function resetVendorForm() {
             document.getElementById('form-vendor').reset();
             document.getElementById('edit-vendor-id').value = '';
@@ -1539,7 +1513,6 @@
             }
         }
 
-        // VENDOR PAYMENTS
         function saveVendorPayment(e) {
             e.preventDefault();
             const vendorId = document.getElementById('vp-vendor').value;
@@ -1640,7 +1613,6 @@
             }
         }
 
-        // OFFICE EXPENSES
         function saveExpense(e) {
             e.preventDefault();
             const editId = document.getElementById('edit-exp-id').value;
@@ -1716,7 +1688,6 @@
             }
         }
 
-        // DASHBOARD PARTIES BALANCE SUMMARY SHEET
         function renderDashboardPartiesSummary() {
             const tbody = document.getElementById('dashboard-parties-tbody');
             if(!tbody) return;
@@ -2135,7 +2106,6 @@
             }
         }
 
-        // SMART SORTING: PREVIOUS BALANCE ALWAYS FIRST, THEN CHRONOLOGICAL BY DD-MM-YYYY
         function sortEntriesProperly(entriesList) {
             return [...entriesList].sort((a, b) => {
                 const aIsPrev = (a.details || '').toUpperCase().includes('PREVIOUS BALANCE') || (a.details || '').toUpperCase().includes('OPENING BALANCE');
@@ -2221,7 +2191,6 @@
             currentAgentBalance = balance;
         }
 
-        // WHATSAPP SHARE FUNCTION (UNIVERSAL API LINK)
         function shareOnWhatsApp() {
             const customerId = document.getElementById('filter-customer-agent').value;
             if(!customerId) {
@@ -2247,7 +2216,6 @@
             window.open(url, '_blank');
         }
 
-        // AUTO SUGGEST FILE NAME FOR BROWSER PRINT / SAVE PDF
         function triggerPrintWithCustomTitle(type) {
             let originalTitle = document.title;
             let customTitle = "Al_Haq_Travels_Statement";
@@ -2366,4 +2334,3 @@
     </script>
 </body>
 </html>
-
